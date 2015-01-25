@@ -1,0 +1,13 @@
+#bubbles {
+    height: 50px;
+    width: 500px;
+}
+
+#bubbles .bubble {
+    float: left;
+    height: 50px;
+    width: 50px;
+    opacity: 0;
+    background-color: orange;
+    border-radius: 25px;
+}
