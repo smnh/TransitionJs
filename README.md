@@ -23,7 +23,9 @@ transition.transition(element, disappearTransition);
 
 ### `transition` method
 
-`transition.transition(element, transitionOptions)`
+```JavaScript
+transition.transition(element, transitionOptions)
+```
 
 Begins CSS transitions on properties defined in transitionOptions of the specified element.
 
@@ -41,7 +43,9 @@ This class may be instantiated in two ways:
 
 #### Passing an argument list
 
-`new transition.TransitionProperty(property, from, to[, arg1[, arg2 [, arg3[, arg4]]]])`
+```JavaScript
+new transition.TransitionProperty(property, from, to[, arg1[, arg2 [, arg3[, arg4]]]])
+```
 
 The `argN` arguments are used as `transition-delay`, `transition-duration`, `transition-timing-function` and `onTransitionEnd` callback.
 
@@ -49,7 +53,9 @@ The first `argN` value that can be parsed as a [`time`](https://developer.mozill
 
 #### Passing an options object
 
-`new transition.TransitionProperty(options)`
+```JavaScript
+new transition.TransitionProperty(options)
+```
 
 - `options.property`: String specifying the property name in camelCase (required)
 - `options.from`: String or number specifying the initial property value (required)
