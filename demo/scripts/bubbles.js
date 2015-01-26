@@ -54,15 +54,8 @@ define([
 
         fadeInTransition = {
             properties: [
-                {
-                    property: "opacity",
-                    start: 0,
-                    end: 1
-                }, {
-                    property: "transform",
-                    start: "scale(0.5)",
-                    end: "scale(1)"
-                }
+                new transition.TransitionProperty("opacity", 0, 1),
+                new transition.TransitionProperty("transform", "scale(0.5)", "scale(1)")
             ],
             duration: "400ms",
             onTransitionEnd: fadeOut
@@ -70,15 +63,8 @@ define([
 
         fadeOutTransition = {
             properties:[
-                {
-                    property: "opacity",
-                    start: 1,
-                    end: 0
-                }, {
-                    property: "transform",
-                    start: "scale(1)",
-                    end: "scale(0.5)"
-                }
+                new transition.TransitionProperty("opacity", 1, 0),
+                new transition.TransitionProperty("transform", "scale(1)", "scale(0.5)")
             ],
             duration: "400ms"
         };

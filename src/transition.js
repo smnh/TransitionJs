@@ -1,5 +1,75 @@
 define(['utils'], function(utils) {
 
+    /**
+     * TransitionProperty(property, from, to[, arg1[, arg2 [, arg3[, arg4]]]])
+     *
+     * The argN arguments are used as transition-delay, transition-duration, transition-timing-function and
+     * transitionend callback.
+     *
+     * The first argN value that can be parsed as a time is assigned to the transition-duration, and the second value
+     * that can be parsed as a time is assigned to transition-delay.
+     * Otherwise, if the argN value that can't be parsed as a time, then if it is a string it is assigned to
+     * transition-timing-function, otherwise, if it is a function it is called from the transitionend event handler or
+     * when property is restarted as a consequence of transition override.
+     *
+     * TransitionProperty(options)
+     * options.property
+     * options.from
+     * options.to
+     * options.duration: assigned to the transition-duration
+     * options.delay: assigned to the transition-delay
+     * options.timingFunction: assigned to the transition-timing-function
+     * options.onTransitionEnd: called from the transitionend event handler
+     *
+     * @constructor
+     */
+    function TransitionProperty() {
+        var i, argument, obj,
+            timeRegExp = /[-+]?\d+(?:.\d+)(?:s|ms)/i,
+            durationSet = false;
+
+        if (arguments.length === 1) {
+            obj = arguments[0];
+            this.property = obj.property;
+            this.from = obj.from;
+            this.to = obj.to;
+            this.duration = (typeof obj.duration === "string" && timeRegExp.test(obj.duration)) ? obj.duration : null;
+            this.delay = (typeof obj.delay === "string" && timeRegExp.test(obj.delay)) ? obj.delay : null;
+            this.timingFunction = (typeof obj.timingFunction === "string") ? obj.timingFunction : null;
+            this.onTransitionEnd = (typeof obj.onTransitionEnd === "function") ? obj.onTransitionEnd : null;
+        } else if (arguments.length >= 3) {
+            this.property = arguments[0];
+            this.from = arguments[1];
+            this.to = arguments[2];
+            this.duration = null;
+            this.delay = null;
+            this.timingFunction = null;
+            this.onTransitionEnd = null;
+            for (i = 3; i < arguments.length; i++) {
+                argument = arguments[i];
+                if (typeof argument === "string") {
+                    if (timeRegExp.test(argument)) {
+                        if (!durationSet) {
+                            durationSet = true;
+                            this.duration = argument;
+                        } else {
+                            this.delay = argument;
+                        }
+                    } else {
+                        this.timingFunction = argument;
+                    }
+                } else if (typeof argument === "function") {
+                    this.onTransitionEnd = argument;
+                }
+            }
+        } else {
+            throw "[TransitionProperty] Invalid number of arguments."
+        }
+
+        this.domProperty = utils.supportedCssProperty(this.property);
+        this.cssProperty = utils.domToCSS(this.domProperty);
+    }
+
     function Transition(options) {
         if (!options || !options.properties) {
             throw "Transition: 'properties' is a required option";
@@ -63,11 +133,13 @@ define(['utils'], function(utils) {
      * @param {Function} options.onTransitionEnd
      */
     Transition.transition = function(element, options) {
-        var transition, i;
+        var transition, i, property;
 
         for (i = 0; i < options.properties.length; i++) {
-            options.properties[i].domProperty = utils.supportedCssProperty(options.properties[i].property);
-            options.properties[i].cssProperty = utils.domToCSS(options.properties[i].domProperty);
+            property = options.properties[i];
+            if (!(property instanceof TransitionProperty)) {
+                options.properties[i] = new TransitionProperty(property);
+            }
         }
 
         Transition.finishTransitioningPropertiesIfExist(element, options.properties);
@@ -152,7 +224,7 @@ define(['utils'], function(utils) {
 
             for (i = 0; i < this.properties.length; i++) {
                 property = this.properties[i];
-                element.style[property.domProperty] = property.start + (property.unit ? property.unit : "");
+                element.style[property.domProperty] = property.from;
                 transitions.cssProperties.push(property.cssProperty);
                 transitions.durations.push(property.duration || this.duration);
                 transitions.delays.push(property.delay || this.delay);
@@ -184,7 +256,7 @@ define(['utils'], function(utils) {
 
                 for (i = 0; i < this.properties.length; i++) {
                     property = this.properties[i];
-                    element.style[property.domProperty] = property.end + (property.unit ? property.unit : "");
+                    element.style[property.domProperty] = property.to;
                 }
 
                 // Trigger reflow
@@ -333,6 +405,7 @@ define(['utils'], function(utils) {
     };
 
     return {
+        TransitionProperty: TransitionProperty,
         transition: Transition.transition
     };
 
