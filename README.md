@@ -29,10 +29,10 @@ Begins CSS transitions on properties defined in transitionOptions of the specifi
 
 ### `transitionOptions` object
 
-- `properties`: Array of TransitionProperty instances
-- `duration`: Default transition-duration for properties that do not specify duration
-- `delay`: Default transition-delay for properties that do not specify delay
-- `timingFunction`: Default transition-timing-function for properties that do not specify timingFunction
+- `properties`: Array of `TransitionProperty` instances
+- `duration`: Default `transition-duration` for properties that do not specify duration
+- `delay`: Default `transition-delay` for properties that do not specify delay
+- `timingFunction`: Default `transition-timing-function` for properties that do not specify timingFunction
 - `onTransitionEnd`: A function that will be invoked when all of the `properties` have finished their transitions. It is invoked with two arguments. The first is the element on which the transition was made. And the second is a boolean value specifying if the transition was finished naturally (by firing `transitionend` event) or not. Which may be possible when another transition begins transitioning one of the properties that is already being transitioned by the current transition on the same element.
 
 ### `TransitionProperty` class
