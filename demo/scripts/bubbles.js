@@ -55,11 +55,11 @@ define([
         fadeInTransition = {
             properties: [
                 {
-                    propertyName: "opacity",
+                    property: "opacity",
                     start: 0,
                     end: 1
                 }, {
-                    propertyName: "transform",
+                    property: "transform",
                     start: "scale(0.5)",
                     end: "scale(1)"
                 }
@@ -71,11 +71,11 @@ define([
         fadeOutTransition = {
             properties:[
                 {
-                    propertyName: "opacity",
+                    property: "opacity",
                     start: 1,
                     end: 0
                 }, {
-                    propertyName: "transform",
+                    property: "transform",
                     start: "scale(1)",
                     end: "scale(0.5)"
                 }

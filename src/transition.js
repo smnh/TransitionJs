@@ -9,6 +9,7 @@ define(['utils'], function(utils) {
         this.properties = options.properties;
         this.duration = options.duration;
         this.delay = options.delay;
+        this.timingFunction = options.timingFunction;
         this.onTransitionEnd = options.onTransitionEnd;
         this.onBeforeChangeStyle = options.onBeforeChangeStyle;
         this.onAfterChangeStyle = options.onAfterChangeStyle;
@@ -19,6 +20,7 @@ define(['utils'], function(utils) {
     Transition.defaultOptions = {
         duration: '400ms',
         delay: '0s',
+        timingFunction: 'ease',
         onTransitionEnd: null,
         onBeforeChangeStyle: null,
         onAfterChangeStyle: null
@@ -36,8 +38,8 @@ define(['utils'], function(utils) {
             transition = transitions[i];
             transitioningPropertyNames = [];
             for (j = 0; j < properties.length; j++) {
-                if (transition.hasTransitioningProperty(properties[j].cssPropertyName)) {
-                    transitioningPropertyNames.push(properties[j].cssPropertyName);
+                if (transition.hasTransitioningProperty(properties[j].cssProperty)) {
+                    transitioningPropertyNames.push(properties[j].cssProperty);
                 }
             }
             if (transitioningPropertyNames.length) {
@@ -55,6 +57,7 @@ define(['utils'], function(utils) {
      * @param {Array} options.properties
      * @param {String} options.duration
      * @param {String} options.delay
+     * @param {String} options.timingFunction
      * @param {Function} options.onBeforeChangeStyle
      * @param {Function} options.onAfterChangeStyle
      * @param {Function} options.onTransitionEnd
@@ -63,13 +66,78 @@ define(['utils'], function(utils) {
         var transition, i;
 
         for (i = 0; i < options.properties.length; i++) {
-            options.properties[i].domPropertyName = utils.supportedCssProperty(options.properties[i].propertyName);
-            options.properties[i].cssPropertyName = utils.domToCSS(options.properties[i].domPropertyName);
+            options.properties[i].domProperty = utils.supportedCssProperty(options.properties[i].property);
+            options.properties[i].cssProperty = utils.domToCSS(options.properties[i].domProperty);
         }
 
         Transition.finishTransitioningPropertiesIfExist(element, options.properties);
         transition = new Transition(options);
         transition.beginTransition(element);
+    };
+
+    Transition.getElementTransitions = function(element) {
+        var i, commaRegExp = /\s*,\s*/,
+            transitionPropertyCSS,
+            transitionDurationCSS,
+            transitionDelayCSS,
+            transitionTimingFunctionCSS,
+            cssProperties = [],
+            durations = [],
+            delays = [],
+            timingFunctions = [],
+            cssPropertiesLength,
+            durationsLength,
+            delaysLength,
+            timingFunctionsLength;
+
+        transitionPropertyCSS = element.style[utils.transitionProperty];
+
+        // If the element has no specified properties in transition-property then do not get the rest of transition-*
+        // properties and leave them empty. Otherwise, get the rest of transition-* properties and fill them to the
+        // length of transition-property by repeating their values. Do we really need this?
+        // https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Using_CSS_transitions#When_property_value_lists_are_of_different_lengths
+        if (transitionPropertyCSS) {
+
+            transitionDurationCSS = element.style[utils.transitionDuration];
+            transitionDelayCSS = element.style[utils.transitionDelay];
+            transitionTimingFunctionCSS = element.style[utils.transitionTimingFunction];
+
+            cssProperties =   transitionPropertyCSS.split(commaRegExp);
+            durations =       transitionDurationCSS       ? transitionDurationCSS.split(commaRegExp)       : ["0s"];
+            delays =          transitionDelayCSS          ? transitionDelayCSS.split(commaRegExp)          : ["0s"];
+            timingFunctions = transitionTimingFunctionCSS ? transitionTimingFunctionCSS.split(commaRegExp) : ["ease"];
+
+            cssPropertiesLength = cssProperties.length;
+            durationsLength = durations.length;
+            delaysLength = delays.length;
+            timingFunctionsLength = timingFunctions.length;
+
+            for (i = 0; i < cssPropertiesLength; i++) {
+                if (durationsLength <= i) {
+                    durations.push(durations[i % durationsLength]);
+                }
+                if (delaysLength <= i) {
+                    delays.push(delays[i % delaysLength]);
+                }
+                if (timingFunctionsLength <= i) {
+                    timingFunctions.push(timingFunctions[i % timingFunctionsLength]);
+                }
+            }
+        }
+
+        return {
+            cssProperties: cssProperties,
+            durations: durations,
+            delays: delays,
+            timingFunctions: timingFunctions
+        }
+    };
+
+    Transition.setElementTransitions = function(element, transitions) {
+        element.style[utils.transitionProperty] = transitions.cssProperties.join(", ");
+        element.style[utils.transitionDuration] = transitions.durations.join(", ");
+        element.style[utils.transitionDelay] = transitions.delays.join(", ");
+        element.style[utils.transitionTimingFunction] = transitions.timingFunctions.join(", ");
     };
 
     Transition.prototype = {
@@ -78,17 +146,18 @@ define(['utils'], function(utils) {
 
         beginTransition: function(element) {
             var i, property,
-                transitionProperties = [],
-                transitionDurations = [],
-                transitionDelays = [];
+                transitions;
+
+            transitions = Transition.getElementTransitions(element);
 
             for (i = 0; i < this.properties.length; i++) {
                 property = this.properties[i];
-                element.style[property.domPropertyName] = property.start + (property.unit ? property.unit : "");
-                transitionProperties.push(property.cssPropertyName);
-                transitionDurations.push(property.duration || this.duration);
-                transitionDelays.push(property.delay || this.delay);
-                this.transitioningPropertyNames.push(property.cssPropertyName);
+                element.style[property.domProperty] = property.start + (property.unit ? property.unit : "");
+                transitions.cssProperties.push(property.cssProperty);
+                transitions.durations.push(property.duration || this.duration);
+                transitions.delays.push(property.delay || this.delay);
+                transitions.timingFunctions.push(property.timingFunction || this.timingFunction);
+                this.transitioningPropertyNames.push(property.cssProperty);
             }
 
             // Trigger reflow
@@ -111,13 +180,11 @@ define(['utils'], function(utils) {
                 // when one of these ‘transition-*’ properties changes at the same time as a property whose change might
                 // transition, it is the new values of the ‘transition-*’ properties that control the transition.
 
-                element.style[utils.transitionProperty] = transitionProperties.join(", ");
-                element.style[utils.transitionDuration] = transitionDurations.join(", ");
-                element.style[utils.transitionDelay] = transitionDelays.join(", ");
+                Transition.setElementTransitions(element, transitions);
 
                 for (i = 0; i < this.properties.length; i++) {
                     property = this.properties[i];
-                    element.style[property.domPropertyName] = property.end + (property.unit ? property.unit : "");
+                    element.style[property.domProperty] = property.end + (property.unit ? property.unit : "");
                 }
 
                 // Trigger reflow
@@ -143,14 +210,18 @@ define(['utils'], function(utils) {
             return this.transitioningPropertyNames.indexOf(propertyName) >= 0;
         },
 
+        getPropertyByCssProperty: function(cssProperty) {
+            var i;
+            for (i = 0; i < this.properties.length; i++) {
+                if (this.properties[i].cssProperty === cssProperty) {
+                    return this.properties[i];
+                }
+            }
+            throw "[Transition.getPropertyByCssProperty]: Transition does not have property '" + cssProperty + "'";
+        },
+
         finishTransitioningProperty: function(element, propertyName) {
-            var index,
-                transitionPropertyCSS,
-                transitionDurationCSS,
-                transitionDelayCSS,
-                transitionProperties,
-                transitionDurations,
-                transitionDelays;
+            var index, transitions, property, onTransitionEnd;
 
             index = this.transitioningPropertyNames.indexOf(propertyName);
             if (index < 0) {
@@ -158,26 +229,27 @@ define(['utils'], function(utils) {
             }
             this.transitioningPropertyNames.splice(index, 1);
 
-            transitionPropertyCSS = element.style[utils.transitionProperty];
-            transitionDurationCSS = element.style[utils.transitionDuration];
-            transitionDelayCSS = element.style[utils.transitionDelay];
+            transitions = Transition.getElementTransitions(element);
 
-            transitionProperties = transitionPropertyCSS.split(/\s*,\s*/);
-            transitionDurations = transitionDurationCSS.split(/\s*,\s*/);
-            transitionDelays = transitionDelayCSS.split(/\s*,\s*/);
-
-            index = transitionProperties.indexOf(propertyName);
+            index = transitions.cssProperties.indexOf(propertyName);
             if (index < 0) {
                 throw "[Transition.removeTransitionProperty]: Did not find transitionProperty '" + propertyName + "'";
             }
 
-            transitionProperties.splice(index, 1);
-            transitionDurations.splice(index, 1);
-            transitionDelays.splice(index, 1);
+            transitions.cssProperties.splice(index, 1);
+            transitions.durations.splice(index, 1);
+            transitions.delays.splice(index, 1);
+            transitions.timingFunctions.splice(index, 1);
 
-            element.style[utils.transitionProperty] = transitionProperties.join(", ");
-            element.style[utils.transitionDuration] = transitionDurations.join(", ");
-            element.style[utils.transitionDelay] = transitionDelays.join(", ");
+            Transition.setElementTransitions(element, transitions);
+
+            property = this.getPropertyByCssProperty(propertyName);
+            if (typeof property.onTransitionEnd === "function") {
+                onTransitionEnd = property.onTransitionEnd;
+                utils.executeInNextEventLoop(function() {
+                    onTransitionEnd(element, true);
+                });
+            }
 
             if (this.transitioningPropertyNames.length === 0) {
                 this.removeTransitionEndListener(element, false);
@@ -185,21 +257,9 @@ define(['utils'], function(utils) {
         },
 
         finishTransitioningProperties: function(element, propertyNames) {
-            var i, index, propertyName,
-                transitionPropertyCSS,
-                transitionDurationCSS,
-                transitionDelayCSS,
-                transitionProperties,
-                transitionDurations,
-                transitionDelays;
+            var i, index, propertyName, transitions, property;
 
-            transitionPropertyCSS = element.style[utils.transitionProperty];
-            transitionDurationCSS = element.style[utils.transitionDuration];
-            transitionDelayCSS = element.style[utils.transitionDelay];
-
-            transitionProperties = transitionPropertyCSS.split(/\s*,\s*/);
-            transitionDurations = transitionDurationCSS.split(/\s*,\s*/);
-            transitionDelays = transitionDelayCSS.split(/\s*,\s*/);
+            transitions = Transition.getElementTransitions(element);
 
             for (i = 0; i < propertyNames.length; i++) {
                 propertyName = propertyNames[i];
@@ -210,18 +270,26 @@ define(['utils'], function(utils) {
                 }
                 this.transitioningPropertyNames.splice(index, 1);
 
-                index = transitionProperties.indexOf(propertyName);
+                index = transitions.cssProperties.indexOf(propertyName);
                 if (index < 0) {
                     throw "[Transition.removeTransitionProperty]: Did not find transitionProperty '" + propertyName + "'";
                 }
-                transitionProperties.splice(index, 1);
-                transitionDurations.splice(index, 1);
-                transitionDelays.splice(index, 1);
+                transitions.cssProperties.splice(index, 1);
+                transitions.durations.splice(index, 1);
+                transitions.delays.splice(index, 1);
+                transitions.timingFunctions.splice(index, 1);
+
+                property = this.getPropertyByCssProperty(propertyName);
+                if (typeof property.onTransitionEnd === "function") {
+                    (function(onTransitionEnd) {
+                        utils.executeInNextEventLoop(function() {
+                            onTransitionEnd(element, false);
+                        });
+                    })(property.onTransitionEnd);
+                }
             }
 
-            element.style[utils.transitionProperty] = transitionProperties.join(", ");
-            element.style[utils.transitionDuration] = transitionDurations.join(", ");
-            element.style[utils.transitionDelay] = transitionDelays.join(", ");
+            Transition.setElementTransitions(element, transitions);
 
             if (this.transitioningPropertyNames.length === 0) {
                 this.removeTransitionEndListener(element, true);
@@ -238,7 +306,7 @@ define(['utils'], function(utils) {
         },
 
         removeTransitionEndListener: function(element, useNewExecutionContext) {
-            var index, self = this;
+            var index;
 
             if (!element.hasOwnProperty("_transitions")) {
                 throw "element does not have own _transitions property";
@@ -254,11 +322,11 @@ define(['utils'], function(utils) {
 
             if (typeof this.onTransitionEnd === "function") {
                 if (useNewExecutionContext) {
-                    window.setTimeout(function() {
-                        self.onTransitionEnd(element, self.allPropertiesWereFinished);
-                    }, 0);
+                    utils.executeInNextEventLoop(function() {
+                        this.onTransitionEnd.call(undefined, element, this.allPropertiesWereFinished);
+                    }, this);
                 } else {
-                    this.onTransitionEnd(element, self.allPropertiesWereFinished);
+                    this.onTransitionEnd.call(undefined, element, this.allPropertiesWereFinished);
                 }
             }
         }

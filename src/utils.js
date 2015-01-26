@@ -7,6 +7,7 @@ define(function() {
         transitionProperty,
         transitionDuration,
         transitionDelay,
+        transitionTimingFunction,
         transitionEndEvent,
         capsRegexp = /[A-Z]/g,
         eventLoopCallbacks = [];
@@ -59,6 +60,7 @@ define(function() {
     transitionProperty = supportedCssProperty('transitionProperty');
     transitionDuration = supportedCssProperty('transitionDuration');
     transitionDelay = supportedCssProperty('transitionDelay');
+    transitionTimingFunction = supportedCssProperty('transitionTimingFunction');
     transitionEndEvent = transEndEventNames[supportedCssProperty('transition')];
     
     function replacementFunction(match) {
@@ -87,6 +89,7 @@ define(function() {
         transitionProperty: transitionProperty,
         transitionDuration: transitionDuration,
         transitionDelay: transitionDelay,
+        transitionTimingFunction: transitionTimingFunction,
         transitionEndEvent: transitionEndEvent,
     
         camelCaseToDashes: function(str) {
