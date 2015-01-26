@@ -41,7 +41,7 @@ This class may be instantiated in two ways:
 
 #### Passing an argument list
 
-`new TransitionProperty(property, from, to[, arg1[, arg2 [, arg3[, arg4]]]])`
+`new transition.TransitionProperty(property, from, to[, arg1[, arg2 [, arg3[, arg4]]]])`
 
 The `argN` arguments are used as `transition-delay`, `transition-duration`, `transition-timing-function` and `onTransitionEnd` callback.
 
@@ -49,7 +49,7 @@ The first `argN` value that can be parsed as a [`time`](https://developer.mozill
 
 #### Passing an options object
 
-`TransitionProperty(options)`
+`new transition.TransitionProperty(options)`
 
 - `options.property`: String specifying the property name in camelCase (required)
 - `options.from`: String or number specifying the initial property value (required)
