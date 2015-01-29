@@ -146,6 +146,14 @@ define(function() {
         isObject: function(obj) {
             var type = typeof obj;
             return type === 'function' || type === 'object' && !!obj;
+        },
+
+        isFunction: function(obj) {
+            return type === 'function';
+        },
+
+        isString: function(obj) {
+            return typeof obj === 'string';
         }
     };
     

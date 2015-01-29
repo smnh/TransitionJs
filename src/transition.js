@@ -33,10 +33,10 @@ define(['utils'], function(utils) {
             this.property = obj.property;
             this.from = obj.from;
             this.to = obj.to;
-            this.duration = (typeof obj.duration === "string" && timeRegExp.test(obj.duration)) ? obj.duration : null;
-            this.delay = (typeof obj.delay === "string" && timeRegExp.test(obj.delay)) ? obj.delay : null;
-            this.timingFunction = (typeof obj.timingFunction === "string") ? obj.timingFunction : null;
-            this.onTransitionEnd = (typeof obj.onTransitionEnd === "function") ? obj.onTransitionEnd : null;
+            this.duration = (utils.isString(obj.duration) && timeRegExp.test(obj.duration)) ? obj.duration : null;
+            this.delay = (utils.isString(obj.delay) && timeRegExp.test(obj.delay)) ? obj.delay : null;
+            this.timingFunction = (utils.isString(obj.timingFunction)) ? obj.timingFunction : null;
+            this.onTransitionEnd = utils.isFunction(obj.onTransitionEnd) ? obj.onTransitionEnd : null;
         } else if (arguments.length >= 3) {
             this.property = arguments[0];
             this.from = arguments[1];
@@ -47,7 +47,7 @@ define(['utils'], function(utils) {
             this.onTransitionEnd = null;
             for (i = 3; i < arguments.length; i++) {
                 argument = arguments[i];
-                if (typeof argument === "string") {
+                if (utils.isString(argument)) {
                     if (timeRegExp.test(argument)) {
                         if (!durationSet) {
                             durationSet = true;
@@ -58,7 +58,7 @@ define(['utils'], function(utils) {
                     } else {
                         this.timingFunction = argument;
                     }
-                } else if (typeof argument === "function") {
+                } else if (utils.isFunction(argument)) {
                     this.onTransitionEnd = argument;
                 }
             }
@@ -220,6 +220,9 @@ define(['utils'], function(utils) {
             var i, property,
                 transitions;
 
+            // TODO: add "immediateTransition" to allow transitions to begin immediately, this requires properties not
+            // to have "from" values because in this case the element is expected to have these properties in its computed style.
+
             transitions = Transition.getElementTransitions(element);
 
             for (i = 0; i < this.properties.length; i++) {
@@ -236,7 +239,7 @@ define(['utils'], function(utils) {
             // noinspection BadExpressionStatementJS
             element.offsetHeight;
 
-            if (typeof this.onBeforeChangeStyle === "function") {
+            if (utils.isFunction(this.onBeforeChangeStyle)) {
                 this.onBeforeChangeStyle(element);
             }
 
@@ -262,7 +265,7 @@ define(['utils'], function(utils) {
                 // Trigger reflow
                 // noinspection BadExpressionStatementJS
                 // element.offsetHeight;
-                if (typeof this.onAfterChangeStyle === "function") {
+                if (utils.isFunction(this.onAfterChangeStyle)) {
                     this.onAfterChangeStyle(element);
                 }
 
@@ -316,7 +319,7 @@ define(['utils'], function(utils) {
             Transition.setElementTransitions(element, transitions);
 
             property = this.getPropertyByCssProperty(propertyName);
-            if (typeof property.onTransitionEnd === "function") {
+            if (utils.isFunction(property.onTransitionEnd)) {
                 onTransitionEnd = property.onTransitionEnd;
                 utils.executeInNextEventLoop(function() {
                     onTransitionEnd(element, true);
@@ -352,7 +355,7 @@ define(['utils'], function(utils) {
                 transitions.timingFunctions.splice(index, 1);
 
                 property = this.getPropertyByCssProperty(propertyName);
-                if (typeof property.onTransitionEnd === "function") {
+                if (utils.isFunction(property.onTransitionEnd)) {
                     (function(onTransitionEnd) {
                         utils.executeInNextEventLoop(function() {
                             onTransitionEnd(element, false);
@@ -392,7 +395,7 @@ define(['utils'], function(utils) {
             element._transitions.splice(index, 1);
             element.removeEventListener(utils.transitionEndEvent, /** @type EventListener */ this, false);
 
-            if (typeof this.onTransitionEnd === "function") {
+            if (utils.isFunction(this.onTransitionEnd)) {
                 if (useNewExecutionContext) {
                     utils.executeInNextEventLoop(function() {
                         this.onTransitionEnd.call(undefined, element, this.allPropertiesWereFinished);
