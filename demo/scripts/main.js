@@ -9,7 +9,10 @@ requirejs.config({
 });
 
 require([
-    'bubbles'
-], function(bubbles) {
+    'bubbles',
+    'slider'
+], function(bubbles, Slider) {
+
+    new Slider();
 
 });

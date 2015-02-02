@@ -149,11 +149,19 @@ define(function() {
         },
 
         isFunction: function(obj) {
-            return type === 'function';
+            return typeof obj === 'function';
         },
 
         isString: function(obj) {
             return typeof obj === 'string';
+        },
+
+        isNumber: function(obj) {
+            return typeof obj === 'number';
+        },
+
+        isBoolean: function(obj) {
+            return typeof obj === 'boolean';
         }
     };
     
