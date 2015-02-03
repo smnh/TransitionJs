@@ -20,7 +20,7 @@ define(['./utils'], function(utils) {
      * options.delay: assigned to the transition-delay
      * options.timingFunction: assigned to the transition-timing-function
      * options.onTransitionEnd: called from the transitionend event handler
-     * options.continueFromCurrentValue: boolean flag indicating whether transition of this property should continue
+     * options.beginFromCurrentValue: boolean flag indicating whether transition of this property should continue
      *      another ongoing transition from its current value. If no other transition already transitions this property
      *      this flag is ignored.
      *
@@ -28,7 +28,7 @@ define(['./utils'], function(utils) {
      */
     function TransitionProperty() {
         var i, argument, obj,
-            timeRegExp = /[-+]?\d+(?:.\d+)(?:s|ms)/i,
+            timeRegExp = /[-+]?\d+(?:.\d+)?(?:s|ms)/i,
             durationSet = false;
 
         if (arguments.length === 1) {
@@ -40,7 +40,7 @@ define(['./utils'], function(utils) {
             this.delay = (utils.isString(obj.delay) && timeRegExp.test(obj.delay)) ? obj.delay : null;
             this.timingFunction = (utils.isString(obj.timingFunction)) ? obj.timingFunction : null;
             this.onTransitionEnd = utils.isFunction(obj.onTransitionEnd) ? obj.onTransitionEnd : null;
-            this.continueFromCurrentValue = utils.isBoolean(obj.continueFromCurrentValue) ? obj.continueFromCurrentValue : null;
+            this.beginFromCurrentValue = utils.isBoolean(obj.beginFromCurrentValue) ? obj.beginFromCurrentValue : null;
         } else if (arguments.length >= 3) {
             this.property = arguments[0];
             this.from = arguments[1];
@@ -49,7 +49,7 @@ define(['./utils'], function(utils) {
             this.delay = null;
             this.timingFunction = null;
             this.onTransitionEnd = null;
-            this.continueFromCurrentValue = null;
+            this.beginFromCurrentValue = null;
             for (i = 3; i < arguments.length; i++) {
                 argument = arguments[i];
                 if (utils.isString(argument)) {
@@ -88,7 +88,7 @@ define(['./utils'], function(utils) {
         this.onTransitionEnd = options.onTransitionEnd;
         this.onBeforeChangeStyle = options.onBeforeChangeStyle;
         this.onAfterChangeStyle = options.onAfterChangeStyle;
-        this.continueFromCurrentValue = utils.isBoolean(options.continueFromCurrentValue) ? options.continueFromCurrentValue : false;
+        this.beginFromCurrentValue = utils.isBoolean(options.beginFromCurrentValue) ? options.beginFromCurrentValue : true;
         this.transitioningPropertyNames = [];
         this.allPropertiesWereFinished = true;
     }
@@ -363,12 +363,12 @@ define(['./utils'], function(utils) {
                 }
                 if (transitioningProperties.length) {
                     transition.allPropertiesWereFinished = false;
-                    transition.finishTransitioningProperties(element, transitioningProperties, elementTransitions);
+                    transition.finishTransitioningProperties(element, transitioningProperties, elementTransitions, this.beginFromCurrentValue);
                 }
             }
         },
 
-        finishTransitioningProperties: function(element, properties, transitions) {
+        finishTransitioningProperties: function(element, properties, transitions, beginFromCurrentValue) {
             var i, index, newProperty, oldProperty, cssProperty, isBoolean;
 
             for (i = 0; i < properties.length; i++) {
@@ -386,8 +386,8 @@ define(['./utils'], function(utils) {
                     throw "[Transition.removeTransitionProperty]: Did not find transitionProperty '" + cssProperty + "'";
                 }
 
-                isBoolean = utils.isBoolean(newProperty.continueFromCurrentValue);
-                if (isBoolean && newProperty.continueFromCurrentValue || !isBoolean && this.continueFromCurrentValue) {
+                isBoolean = utils.isBoolean(newProperty.beginFromCurrentValue);
+                if (isBoolean && newProperty.beginFromCurrentValue || !isBoolean && beginFromCurrentValue) {
                     newProperty.from = window.getComputedStyle(element, null).getPropertyValue(newProperty.cssProperty);
                 }
                 transitions.cssProperties.splice(index, 1);

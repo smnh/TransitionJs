@@ -4,13 +4,12 @@ define([
 ], function(_, transition) {
 
     function Slider() {
-        this.el = document.getElementById("slider");
-        if (!this.el) {
-            return;
-        }
+        this.el = document.createElement("div");
+        this.el.className = "slider";
         this.rectEl = document.createElement("div");
         this.rectEl.className = "sliderRect";
         this.el.appendChild(this.rectEl);
+        document.body.appendChild(this.el);
         this.el.addEventListener("click", this.reverseTransition.bind(this), false);
         this.direction = null;
         this.moveSliderRight();
@@ -32,7 +31,6 @@ define([
                 properties: [
                     new transition.TransitionProperty("transform", "translateX(0)", "translateX(450px)")
                 ],
-                continueFromCurrentValue: true,
                 duration: "2000ms",
                 onTransitionEnd: this.onMoveRightTransitionEnd.bind(this)
             });
@@ -44,7 +42,6 @@ define([
                 properties: [
                     new transition.TransitionProperty("transform", "translateX(450px)", "translateX(0)")
                 ],
-                continueFromCurrentValue: true,
                 duration: "2000ms",
                 onTransitionEnd: this.onMoveLeftTransitionEnd.bind(this)
             });

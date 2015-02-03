@@ -7,10 +7,12 @@ requirejs.config({
 
 require([
     'demo/js/bubbles',
-    'demo/js/slider'
-], function(Bubbles, Slider) {
+    'demo/js/slider',
+    'demo/js/pulsation'
+], function(Bubbles, Slider, Pulsation) {
 
     new Bubbles();
     new Slider();
+    new Pulsation();
 
 });

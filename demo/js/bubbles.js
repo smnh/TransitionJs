@@ -6,11 +6,8 @@ define([
     function Bubbles() {
         var i, bubble, fragment;
 
-        this.el = document.getElementById("bubbles");
-        if (!this.el) {
-            return;
-        }
-
+        this.el = document.createElement("div");
+        this.el.className = "bubbles";
         this.bubbles = [];
         this.bubblesCount = 10;
         fragment = document.createDocumentFragment();
@@ -25,6 +22,7 @@ define([
         }
 
         this.el.appendChild(fragment);
+        document.body.appendChild(this.el);
         this.animateBubbles();
     }
 
