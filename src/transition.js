@@ -1,4 +1,4 @@
-define(['utils'], function(utils) {
+define(['./utils'], function(utils) {
 
     /**
      * TransitionProperty(property, from, to[, arg1[, arg2[, arg3[, arg4]]]])

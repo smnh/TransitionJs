@@ -1,10 +1,13 @@
 define([
-    'lib/underscore',
+    'underscore',
     'src/transition'
 ], function(_, transition) {
 
     function Slider() {
         this.el = document.getElementById("slider");
+        if (!this.el) {
+            return;
+        }
         this.rectEl = document.createElement("div");
         this.rectEl.className = "sliderRect";
         this.el.appendChild(this.rectEl);
@@ -13,9 +16,7 @@ define([
         this.moveSliderRight();
     }
 
-    Slider.prototype = {
-
-        constructor: Slider,
+    _.extend(Slider.prototype, {
 
         reverseTransition: function() {
             if (this.direction === "right") {
@@ -65,7 +66,7 @@ define([
             }
         }
 
-    };
+    });
 
     return Slider;
 
