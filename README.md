@@ -32,10 +32,13 @@ Begins CSS transitions on properties defined in transitionOptions of the specifi
 ### `transitionOptions` object
 
 - `properties`: Array of `TransitionProperty` instances
-- `duration`: Default `transition-duration` for properties that do not specify duration
-- `delay`: Default `transition-delay` for properties that do not specify delay
-- `timingFunction`: Default `transition-timing-function` for properties that do not specify timingFunction
-- `onTransitionEnd`: A function that will be invoked when all of the `properties` have finished their transitions. It is invoked with two arguments. The first is the element on which the transition was made. And the second is a boolean value specifying if the transition was finished naturally (by firing `transitionend` event) or not. Which may be possible when another transition begins transitioning one of the properties that is already being transitioned by the current transition on the same element.
+- `duration`: Default `transition-duration` for properties that do not specify their `duration`. Default is `400ms`.
+- `delay`: Default `transition-delay` for properties that do not specify their `delay`. Default is `0s`.
+- `timingFunction`: Default `transition-timing-function` for properties that do not specify their `timingFunction`. Default is `ease`.
+- `continueFromCurrentValue`: Default `continueFromCurrentValue` for properties that do not specify their own value. Default is `false`.
+- `onBeforeChangeStyle`: A function that will be called on [before-change style](http://www.w3.org/TR/css3-transitions/#before-change-style) [style change event](http://www.w3.org/TR/css3-transitions/#style-change-event).
+- `onAfterChangeStyle`: A function that will be called on [after-change style](http://www.w3.org/TR/css3-transitions/#after-change-style) [style change event](http://www.w3.org/TR/css3-transitions/#style-change-event).
+- `onTransitionEnd`: A function that will be invoked when all of the `properties` have finished their transitions. It is invoked with two arguments. The first is the element on which the transition was made. And the second is a boolean flag specifying if the transition was finished naturally (by firing `transitionend` event) or by another transition which began transitioning one of the properties that were already being transitioned by the current transition.
 
 ### `TransitionProperty` class
 
@@ -63,8 +66,9 @@ new transition.TransitionProperty(options)
 - `options.duration`: The [`time`](https://developer.mozilla.org/en-US/docs/Web/CSS/time) assigned to the `transition-duration` (optional)
 - `options.delay`: The [`time`](https://developer.mozilla.org/en-US/docs/Web/CSS/time) assigned to the `transition-delay` (optional)
 - `options.timingFunction`: String specifying the `transition-timing-function` (optional)
+- `options.continueFromCurrentValue`: If set to `true` when a transition is in-flight, the current property value of the in-flight transition is used as the starting value for the new transition. If set to `false` or not specified, the in-flight transition ends before the new transition begins using the `form` property value as the starting value. This flag is ignored if there is no in-flight transition. If not specified, the `continueFromCurrentValue` property of the transition is used. (optional)
 - `options.onTransitionEnd`: Function which is invoked when the property have finished its transition (optional)
 
 The options object may be used directly in `properties` array, then it will be transformed to `TransitionProperty` automatically.
 
-As with the `transitionOptions`, the `onTransitionEnd` function will be invoked with two arguments, the transitioned element, and a boolean value indicating if the property have finished its transition naturally (by firing `transitionend` event) or not (e.g.: as a consequence of another transition that begin transitioning this property while it is already being transitioned).
+As with the `transitionOptions`, the `onTransitionEnd` function will be invoked with two arguments, the transitioned element, and a boolean value indicating if the property have finished its transition naturally (by firing `transitionend` event) or not (e.g.: as a consequence of a new transition that began transitioning this property while it was already being transitioned by an in-flight transition).
