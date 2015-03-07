@@ -27,12 +27,21 @@ define(['./utils'], function(utils) {
      * @constructor
      */
     function TransitionProperty() {
-        var i, argument, obj,
+        var i, argument, obj = null, arr = null,
             timeRegExp = /[-+]?\d+(?:.\d+)?(?:s|ms)/i,
             durationSet = false;
 
         if (arguments.length === 1) {
-            obj = arguments[0];
+            if (utils.isArray(arguments[0])) {
+                arr = arguments[0];
+            } else {
+                obj = arguments[0];
+            }
+        } else {
+            arr = arguments;
+        }
+
+        if (obj) {
             this.property = obj.property;
             this.from = obj.from;
             this.to = obj.to;
@@ -41,17 +50,17 @@ define(['./utils'], function(utils) {
             this.timingFunction = (utils.isString(obj.timingFunction)) ? obj.timingFunction : null;
             this.onTransitionEnd = utils.isFunction(obj.onTransitionEnd) ? obj.onTransitionEnd : null;
             this.beginFromCurrentValue = utils.isBoolean(obj.beginFromCurrentValue) ? obj.beginFromCurrentValue : null;
-        } else if (arguments.length >= 3) {
-            this.property = arguments[0];
-            this.from = arguments[1];
-            this.to = arguments[2];
+        } else if (arr.length >= 3) {
+            this.property = arr[0];
+            this.from = arr[1];
+            this.to = arr[2];
             this.duration = null;
             this.delay = null;
             this.timingFunction = null;
             this.onTransitionEnd = null;
             this.beginFromCurrentValue = null;
-            for (i = 3; i < arguments.length; i++) {
-                argument = arguments[i];
+            for (i = 3; i < arr.length; i++) {
+                argument = arr[i];
                 if (utils.isString(argument)) {
                     if (timeRegExp.test(argument)) {
                         if (!durationSet) {
@@ -75,13 +84,13 @@ define(['./utils'], function(utils) {
         this.cssProperty = utils.domToCSS(this.domProperty);
     }
 
-    function Transition(options) {
-        if (!options || !options.properties) {
-            throw "Transition: 'properties' is a required option";
+    function Transition(properties, options) {
+        if (!properties) {
+            throw "Transition: 'properties' is a required parameter";
         }
 
-        options = utils.defaults(options, Transition.defaultOptions);
-        this.properties = options.properties;
+        options = utils.defaults(options || {}, Transition.defaultOptions);
+        this.properties = properties;
         this.duration = options.duration;
         this.delay = options.delay;
         this.timingFunction = options.timingFunction;
@@ -89,7 +98,10 @@ define(['./utils'], function(utils) {
         this.onBeforeChangeStyle = options.onBeforeChangeStyle;
         this.onAfterChangeStyle = options.onAfterChangeStyle;
         this.beginFromCurrentValue = utils.isBoolean(options.beginFromCurrentValue) ? options.beginFromCurrentValue : true;
+        this.toBeTransitionedPropertyNames = [];
+        this.toBeTransitionedProperties = [];
         this.transitioningPropertyNames = [];
+        this.transitioningProperties = [];
         this.allPropertiesWereFinished = true;
     }
 
@@ -116,20 +128,44 @@ define(['./utils'], function(utils) {
      * @param {Function} options.onTransitionEnd
      */
     Transition.transition = function(element, options) {
-        var transition, i, property;
+        var transition, i, property, properties = [];
 
-        for (i = 0; i < options.properties.length; i++) {
-            property = options.properties[i];
-            if (!(property instanceof TransitionProperty)) {
-                options.properties[i] = new TransitionProperty(property);
+        if (utils.isArray(options.properties)) {
+            // properties: [ ... ]
+            for (i = 0; i < options.properties.length; i++) {
+                property = options.properties[i];
+                if (utils.isArray(property) || !(property instanceof TransitionProperty)) {
+                    // properties: [ ["opacity", 0, 1], [ ... ], ... ]
+                    // properties: [ {property: "opacity", from: 0, to: 1}, { ... }, ... ]
+                    property = new TransitionProperty(property);
+                }
+                // If not above, then property is instance of TransitionProperty
+                // properties: [new TransitionProperty("opacity", 0, 1)]
+                properties.push(property);
+            }
+        } else {
+            // properties: { ... }
+            for (property in options.properties) {
+                if (options.properties.hasOwnProperty(property)) {
+                    if (utils.isArray(options.properties[property])) {
+                        // properties: { "opacity": [0, 1], ... }
+                        property = [property].concat(options.properties[property]);
+                        property = new TransitionProperty(property);
+                    } else {
+                        // properties: { "opacity": {from: 0, to: 1}, ... }
+                        property = utils.defaults({"property": property}, options.properties[property]);
+                        property = new TransitionProperty(property);
+                    }
+                    properties.push(property);
+                }
             }
         }
 
-        transition = new Transition(options);
+        transition = new Transition(properties, options);
         transition.beginTransition(element);
     };
 
-    Transition.getElementTransitions = function(element) {
+    Transition.getElementTransitionValues = function(element) {
         var i, commaRegExp = /\s*,\s*/,
             transitionPropertyCSS,
             transitionDurationCSS,
@@ -187,7 +223,7 @@ define(['./utils'], function(utils) {
         }
     };
 
-    Transition.setElementTransitions = function(element, transitions) {
+    Transition.setElementTransitionValues = function(element, transitions) {
         element.style[utils.transitionProperty] = transitions.cssProperties.join(", ");
         element.style[utils.transitionDuration] = transitions.durations.join(", ");
         element.style[utils.transitionDelay] = transitions.delays.join(", ");
@@ -199,18 +235,13 @@ define(['./utils'], function(utils) {
         constructor: Transition,
 
         beginTransition: function(element) {
-            var i, property,
-                transitions, transitionsLength;
+            var i, property;
 
-            transitions = Transition.getElementTransitions(element);
+            this.finishTransitioningPropertiesIfExist(element);
 
-            transitionsLength = transitions.cssProperties.length;
-            this.finishTransitioningPropertiesIfExist(element, transitions);
-            // If some element transitions were removed, apply new style to prevent transition to old values until the next event loop.
-            if (transitionsLength !== transitions.cssProperties.length) {
-                Transition.setElementTransitions(element, transitions);
-            }
-
+            // Must ensure that all transition properties have "from" values. Otherwise we wouldn't be able to check
+            // if a property has equal "from" and "to" values and not to transition them. Their "transitionend" event
+            // wouldn't be called anyway.
             for (i = 0; i < this.properties.length; i++) {
                 property = this.properties[i];
                 if (!utils.isString(property.from) && !utils.isNumber(property.from)) {
@@ -221,26 +252,20 @@ define(['./utils'], function(utils) {
             for (i = 0; i < this.properties.length; i++) {
                 property = this.properties[i];
                 if (property.from == property.to) {
+                    element.style[property.domProperty] = property.to;
                     this.executeOnTransitionEndForProperty(property, element, true);
-                    continue;
+                } else {
+                    element.style[property.domProperty] = property.from;
+                    this.toBeTransitionedPropertyNames.push(property.cssProperty);
+                    this.toBeTransitionedProperties.push(property);
                 }
-                element.style[property.domProperty] = property.from;
-                transitions.cssProperties.push(property.cssProperty);
-                transitions.durations.push(property.duration || this.duration);
-                transitions.delays.push(property.delay || this.delay);
-                transitions.timingFunctions.push(property.timingFunction || this.timingFunction);
-                this.transitioningPropertyNames.push(property.cssProperty);
             }
 
             if (utils.isFunction(this.onBeforeChangeStyle)) {
                 this.onBeforeChangeStyle(element);
             }
 
-            if (this.transitioningPropertyNames.length === 0) {
-                for (i = 0; i < this.properties.length; i++) {
-                    property = this.properties[i];
-                    element.style[property.domProperty] = property.to;
-                }
+            if (this.toBeTransitionedProperties.length === 0) {
                 if (utils.isFunction(this.onAfterChangeStyle)) {
                     this.onAfterChangeStyle(element);
                 }
@@ -255,6 +280,16 @@ define(['./utils'], function(utils) {
             this.addTransitionEndListener(element);
 
             utils.executeInNextEventLoop(function() {
+                var transitionValues, i, property;
+
+                // If other transition began after this one in the same event loop, they could cause
+                // toBeTransitionedProperties of this transition to be removed and thus end this transition.
+                // No need to call "onAfterChangeStyle" and "removeTransitionEndListener" as they were already called
+                // from "finishToBeTransitionedProperties".
+                if (this.toBeTransitionedProperties.length === 0) {
+                    return;
+                }
+
                 // Trigger reflow
                 // noinspection BadExpressionStatementJS
                 // element.offsetHeight;
@@ -264,10 +299,22 @@ define(['./utils'], function(utils) {
                 // when one of these ‘transition-*’ properties changes at the same time as a property whose change might
                 // transition, it is the new values of the ‘transition-*’ properties that control the transition.
 
-                Transition.setElementTransitions(element, transitions);
+                transitionValues = Transition.getElementTransitionValues(element);
+                for (i = 0; i < this.toBeTransitionedProperties.length; i++) {
+                    property = this.toBeTransitionedProperties[i];
+                    transitionValues.cssProperties.push(property.cssProperty);
+                    transitionValues.durations.push(property.duration || this.duration);
+                    transitionValues.delays.push(property.delay || this.delay);
+                    transitionValues.timingFunctions.push(property.timingFunction || this.timingFunction);
+                }
+                this.transitioningPropertyNames = this.toBeTransitionedPropertyNames;
+                this.transitioningProperties = this.toBeTransitionedProperties;
+                this.toBeTransitionedPropertyNames = [];
+                this.toBeTransitionedProperties = [];
+                Transition.setElementTransitionValues(element, transitionValues);
 
-                for (i = 0; i < this.properties.length; i++) {
-                    property = this.properties[i];
+                for (i = 0; i < this.transitioningProperties.length; i++) {
+                    property = this.transitioningProperties[i];
                     element.style[property.domProperty] = property.to;
                 }
 
@@ -283,9 +330,11 @@ define(['./utils'], function(utils) {
         },
 
         handleEvent: function(event) {
-            // Compare event.target to event.currentTarget in case the event was bubbled up to an ancestor element that
-            // also listens to transition end event
-            if (event.target === event.currentTarget) {
+            // Compare event.target to event.currentTarget to ensure that this event is targeted to this element and
+            // not one of its descendants elements that also listen to this event, and then bubbled up.
+            // Because an element can have multiple transitions at once, check that the css property this event related
+            // to is one of the transitioning properties of this transition.
+            if (event.target === event.currentTarget && this.hasTransitioningProperty(event.propertyName)) {
                 this.finishTransitioningProperty(event.currentTarget, event.propertyName);
             }
         },
@@ -294,113 +343,157 @@ define(['./utils'], function(utils) {
             return this.transitioningPropertyNames.indexOf(propertyName) >= 0;
         },
 
-        getPropertyByCssProperty: function(cssProperty) {
+        removeTransitioningProperty: function(propertyName) {
+            var property, index;
+            index = this.transitioningPropertyNames.indexOf(propertyName);
+            if (index < 0) {
+                throw "[Transition.removeTransitioningProperty]: Transition does not have transitioning property '" + propertyName + "'";
+            }
+            this.transitioningPropertyNames.splice(index, 1);
+            this.transitioningProperties.splice(index, 1);
+        },
+
+        hasToBeTransitionedProperty: function(propertyName) {
+            return this.toBeTransitionedPropertyNames.indexOf(propertyName) >= 0;
+        },
+
+        removeToBeTransitionedProperty: function(propertyName) {
+            var index;
+            index = this.toBeTransitionedPropertyNames.indexOf(propertyName);
+            if (index < 0) {
+                throw "[Transition.removeToBeTransitionedProperty]: Transition does not have toBeTransitionedProperty '" + propertyName + "'";
+            }
+            this.toBeTransitionedPropertyNames.slice(index, 1);
+            this.toBeTransitionedProperties.splice(index, 1);
+        },
+
+        getPropertyByPropertyName: function(propertyName) {
             var i;
             for (i = 0; i < this.properties.length; i++) {
-                if (this.properties[i].cssProperty === cssProperty) {
+                if (this.properties[i].cssProperty === propertyName) {
                     return this.properties[i];
                 }
             }
-            throw "[Transition.getPropertyByCssProperty]: Transition does not have property '" + cssProperty + "'";
-        },
-
-        executeOnTransitionEndForProperty: function(property, element, finished) {
-            var onTransitionEnd;
-            if (utils.isFunction(property.onTransitionEnd)) {
-                onTransitionEnd = property.onTransitionEnd;
-                utils.executeInNextEventLoop(function() {
-                    onTransitionEnd(element, finished);
-                });
-            }
+            throw "[Transition.getPropertyByPropertyName]: Transition does not have property '" + propertyName + "'";
         },
 
         finishTransitioningProperty: function(element, propertyName) {
-            var index, transitions, property;
+            var index, transitionValues, property;
 
-            index = this.transitioningPropertyNames.indexOf(propertyName);
-            if (index < 0) {
-                throw "[Transition.finishTransitioningProperty]: Transition does not have transitioning property '" + propertyName + "'";
-            }
-            this.transitioningPropertyNames.splice(index, 1);
+            this.removeTransitioningProperty(propertyName);
 
-            transitions = Transition.getElementTransitions(element);
+            transitionValues = Transition.getElementTransitionValues(element);
 
-            index = transitions.cssProperties.indexOf(propertyName);
+            index = transitionValues.cssProperties.indexOf(propertyName);
             if (index < 0) {
                 throw "[Transition.removeTransitionProperty]: Did not find transitionProperty '" + propertyName + "'";
             }
+            transitionValues.cssProperties.splice(index, 1);
+            transitionValues.durations.splice(index, 1);
+            transitionValues.delays.splice(index, 1);
+            transitionValues.timingFunctions.splice(index, 1);
 
-            transitions.cssProperties.splice(index, 1);
-            transitions.durations.splice(index, 1);
-            transitions.delays.splice(index, 1);
-            transitions.timingFunctions.splice(index, 1);
+            Transition.setElementTransitionValues(element, transitionValues);
 
-            Transition.setElementTransitions(element, transitions);
-
-            property = this.getPropertyByCssProperty(propertyName);
+            property = this.getPropertyByPropertyName(propertyName);
             this.executeOnTransitionEndForProperty(property, element, true);
 
-            if (this.transitioningPropertyNames.length === 0) {
+            if (this.transitioningProperties.length === 0) {
                 this.removeTransitionEndListener(element, false);
             }
         },
 
-        finishTransitioningPropertiesIfExist: function(element, elementTransitions) {
-            var i, j, transitions, transition, transitioningProperties;
+        finishTransitioningPropertiesIfExist: function(element) {
+            var i, j, transitionValues, transitions, transition, transitioningProperties, toBeTransitionedProperties,
+                found = false;
 
             if (!element.hasOwnProperty("_transitions") || element._transitions.length === 0) {
                 return;
             }
 
+            transitionValues = Transition.getElementTransitionValues(element);
             transitions = element._transitions;
             for (i = 0; i < transitions.length; i++) {
                 transition = transitions[i];
                 transitioningProperties = [];
+                toBeTransitionedProperties = [];
                 for (j = 0; j < this.properties.length; j++) {
                     if (transition.hasTransitioningProperty(this.properties[j].cssProperty)) {
                         transitioningProperties.push(this.properties[j]);
+                    } else if (transition.hasToBeTransitionedProperty(this.properties[j].cssProperty)) {
+                        toBeTransitionedProperties.push(this.properties[j]);
                     }
                 }
                 if (transitioningProperties.length) {
+                    found = true;
                     transition.allPropertiesWereFinished = false;
-                    transition.finishTransitioningProperties(element, transitioningProperties, elementTransitions, this.beginFromCurrentValue);
+                    transition.finishTransitioningProperties(element, transitioningProperties, transitionValues, this.beginFromCurrentValue);
+                } else if (toBeTransitionedProperties.length) {
+                    transition.allPropertiesWereFinished = false;
+                    transition.finishToBeTransitionedProperties(element, toBeTransitionedProperties, this.beginFromCurrentValue);
                 }
+            }
+
+            // Apply new transition values if some element transitions values were removed
+            if (found) {
+                Transition.setElementTransitionValues(element, transitionValues);
             }
         },
 
-        finishTransitioningProperties: function(element, properties, transitions, beginFromCurrentValue) {
-            var i, index, newProperty, oldProperty, cssProperty, isBoolean;
+        finishTransitioningProperties: function(element, properties, transitionValues, beginFromCurrentValue) {
+            var i, index, newProperty, oldProperty, propertyName;
 
             for (i = 0; i < properties.length; i++) {
                 newProperty = properties[i];
-                cssProperty = newProperty.cssProperty;
+                propertyName = newProperty.cssProperty;
 
-                index = this.transitioningPropertyNames.indexOf(cssProperty);
+                this.removeTransitioningProperty(propertyName);
+                this.updateFromToCurrentValueIfNeeded(element, newProperty, beginFromCurrentValue);
+
+                index = transitionValues.cssProperties.indexOf(propertyName);
                 if (index < 0) {
-                    throw "[Transition.finishTransitioningProperties]: Transition does not have transitioning property '" + cssProperty + "'";
+                    throw "[Transition.removeTransitionProperty]: Did not find transitionProperty '" + propertyName + "'";
                 }
-                this.transitioningPropertyNames.splice(index, 1);
+                transitionValues.cssProperties.splice(index, 1);
+                transitionValues.durations.splice(index, 1);
+                transitionValues.delays.splice(index, 1);
+                transitionValues.timingFunctions.splice(index, 1);
 
-                index = transitions.cssProperties.indexOf(cssProperty);
-                if (index < 0) {
-                    throw "[Transition.removeTransitionProperty]: Did not find transitionProperty '" + cssProperty + "'";
-                }
-
-                isBoolean = utils.isBoolean(newProperty.beginFromCurrentValue);
-                if (isBoolean && newProperty.beginFromCurrentValue || !isBoolean && beginFromCurrentValue) {
-                    newProperty.from = window.getComputedStyle(element, null).getPropertyValue(newProperty.cssProperty);
-                }
-                transitions.cssProperties.splice(index, 1);
-                transitions.durations.splice(index, 1);
-                transitions.delays.splice(index, 1);
-                transitions.timingFunctions.splice(index, 1);
-
-                oldProperty = this.getPropertyByCssProperty(cssProperty);
+                oldProperty = this.getPropertyByPropertyName(propertyName);
                 this.executeOnTransitionEndForProperty(oldProperty, element, false);
             }
 
-            if (this.transitioningPropertyNames.length === 0) {
+            if (this.transitioningProperties.length === 0) {
                 this.removeTransitionEndListener(element, true);
+            }
+        },
+
+        finishToBeTransitionedProperties: function(element, properties, beginFromCurrentValue) {
+            var i, newProperty, oldProperty, propertyName;
+
+            for (i = 0; i < properties.length; i++) {
+                newProperty = properties[i];
+                propertyName = newProperty.cssProperty;
+
+                this.removeToBeTransitionedProperty(propertyName);
+                this.updateFromToCurrentValueIfNeeded(element, newProperty, beginFromCurrentValue);
+
+                oldProperty = this.getPropertyByPropertyName(propertyName);
+                this.executeOnTransitionEndForProperty(oldProperty, element, false);
+            }
+
+            if (this.toBeTransitionedProperties.length === 0) {
+                if (utils.isFunction(this.onAfterChangeStyle)) {
+                    this.onAfterChangeStyle(element);
+                }
+                this.removeTransitionEndListener(element, true);
+            }
+        },
+
+        updateFromToCurrentValueIfNeeded: function(element, property, beginFromCurrentValue) {
+            var isBoolean = utils.isBoolean(property.beginFromCurrentValue);
+            if (isBoolean && property.beginFromCurrentValue || !isBoolean && beginFromCurrentValue) {
+                property.from = window.getComputedStyle(element, null).getPropertyValue(property.cssProperty);
             }
         },
 
@@ -411,21 +504,6 @@ define(['./utils'], function(utils) {
 
             element._transitions.push(this);
             element.addEventListener(utils.transitionEndEvent, /** @type EventListener */ this, false);
-        },
-
-        executeOnTransitionEnd: function(element, useNewExecutionContext) {
-            var onTransitionEnd;
-            if (utils.isFunction(this.onTransitionEnd)) {
-                onTransitionEnd = this.onTransitionEnd;
-                if (useNewExecutionContext) {
-                    utils.executeInNextEventLoop(function() {
-                        onTransitionEnd(element, this.allPropertiesWereFinished);
-                    }, this);
-                } else {
-                    onTransitionEnd(element, this.allPropertiesWereFinished);
-                }
-            }
-
         },
 
         removeTransitionEndListener: function(element, useNewExecutionContext) {
@@ -444,12 +522,39 @@ define(['./utils'], function(utils) {
             element.removeEventListener(utils.transitionEndEvent, /** @type EventListener */ this, false);
 
             this.executeOnTransitionEnd(element, useNewExecutionContext);
+        },
+
+        executeOnTransitionEndForProperty: function(property, element, finished) {
+            var onTransitionEnd;
+            if (utils.isFunction(property.onTransitionEnd)) {
+                onTransitionEnd = property.onTransitionEnd;
+                utils.executeInNextEventLoop(function() {
+                    onTransitionEnd(element, finished);
+                });
+            }
+        },
+
+        executeOnTransitionEnd: function(element, useNewExecutionContext) {
+            var onTransitionEnd;
+            if (utils.isFunction(this.onTransitionEnd)) {
+                onTransitionEnd = this.onTransitionEnd;
+                if (useNewExecutionContext) {
+                    utils.executeInNextEventLoop(function() {
+                        onTransitionEnd(element, this.allPropertiesWereFinished);
+                    }, this);
+                } else {
+                    onTransitionEnd(element, this.allPropertiesWereFinished);
+                }
+            }
+
         }
+
     };
 
     return {
         TransitionProperty: TransitionProperty,
-        transition: Transition.transition
+        transition: Transition.transition,
+        begin: Transition.transition
     };
 
 });

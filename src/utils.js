@@ -130,6 +130,28 @@ define(function() {
             });
         },
 
+        /**
+         * Extend a given object with all the properties in passed-in object(s).
+         * http://underscorejs.org/docs/underscore.html
+         */
+        extend: function(obj) {
+            if (!utils.isObject(obj)) return obj;
+            var source, prop;
+            for (var i = 1, length = arguments.length; i < length; i++) {
+                source = arguments[i];
+                for (prop in source) {
+                    if (hasOwnProperty.call(source, prop)) {
+                        obj[prop] = source[prop];
+                    }
+                }
+            }
+            return obj;
+        },
+
+        /**
+         * Fill in a given object with default properties.
+         * http://underscorejs.org/docs/underscore.html
+         */
         defaults: function(obj) {
             if (!this.isObject(obj)) return obj;
             for (var i = 1, length = arguments.length; i < length; i++) {
@@ -142,7 +164,11 @@ define(function() {
             }
             return obj;
         },
-    
+
+        /**
+         * Is a given variable an object?
+         * http://underscorejs.org/docs/underscore.html
+         */
         isObject: function(obj) {
             var type = typeof obj;
             return type === 'function' || type === 'object' && !!obj;
@@ -162,6 +188,10 @@ define(function() {
 
         isBoolean: function(obj) {
             return typeof obj === 'boolean';
+        },
+
+        isArray: Array.isArray || function(obj) {
+            return Object.prototype.toString.call(obj) === '[object Array]';
         }
     };
     
