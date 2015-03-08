@@ -97,7 +97,7 @@ define(['./utils'], function(utils) {
         this.onTransitionEnd = options.onTransitionEnd;
         this.onBeforeChangeStyle = options.onBeforeChangeStyle;
         this.onAfterChangeStyle = options.onAfterChangeStyle;
-        this.beginFromCurrentValue = utils.isBoolean(options.beginFromCurrentValue) ? options.beginFromCurrentValue : true;
+        this.beginFromCurrentValue = utils.isBoolean(options.beginFromCurrentValue) ? options.beginFromCurrentValue : false;
         this.toBeTransitionedPropertyNames = [];
         this.toBeTransitionedProperties = [];
         this.transitioningPropertyNames = [];
@@ -118,8 +118,8 @@ define(['./utils'], function(utils) {
      * Applies CSS transition on specified element using properties other transition related data specified in options.
      *
      * @param {HTMLElement} element
+     * @param {Array|Object} properties
      * @param {Object} options
-     * @param {Array} options.properties
      * @param {String} options.duration
      * @param {String} options.delay
      * @param {String} options.timingFunction
@@ -127,41 +127,51 @@ define(['./utils'], function(utils) {
      * @param {Function} options.onAfterChangeStyle
      * @param {Function} options.onTransitionEnd
      */
-    Transition.transition = function(element, options) {
-        var transition, i, property, properties = [];
+    Transition.transition = function(element, properties, options) {
+        var transition, i, property, _properties = [];
 
-        if (utils.isArray(options.properties)) {
+        if ("properties" in properties) {
+            options = properties;
+            properties = properties["properties"];
+        }
+
+        if (utils.isArray(properties)) {
             // properties: [ ... ]
-            for (i = 0; i < options.properties.length; i++) {
-                property = options.properties[i];
-                if (utils.isArray(property) || !(property instanceof TransitionProperty)) {
-                    // properties: [ ["opacity", 0, 1], [ ... ], ... ]
-                    // properties: [ {property: "opacity", from: 0, to: 1}, { ... }, ... ]
-                    property = new TransitionProperty(property);
+            if (properties.length && utils.isString(properties[0])) {
+                // properties: ['opacity', '0', '1', ...]
+                _properties.push(new TransitionProperty(properties));
+            } else {
+                for (i = 0; i < properties.length; i++) {
+                    property = properties[i];
+                    if (utils.isArray(property) || !(property instanceof TransitionProperty)) {
+                        // properties: [ ["opacity", 0, 1], [ ... ], ... ]
+                        // properties: [ {property: "opacity", from: 0, to: 1}, { ... }, ... ]
+                        property = new TransitionProperty(property);
+                    }
+                    // If not above, then property is instance of TransitionProperty
+                    // properties: [new TransitionProperty("opacity", 0, 1)]
+                    _properties.push(property);
                 }
-                // If not above, then property is instance of TransitionProperty
-                // properties: [new TransitionProperty("opacity", 0, 1)]
-                properties.push(property);
             }
         } else {
             // properties: { ... }
-            for (property in options.properties) {
-                if (options.properties.hasOwnProperty(property)) {
-                    if (utils.isArray(options.properties[property])) {
+            for (property in properties) {
+                if (properties.hasOwnProperty(property)) {
+                    if (utils.isArray(properties[property])) {
                         // properties: { "opacity": [0, 1], ... }
-                        property = [property].concat(options.properties[property]);
+                        property = [property].concat(properties[property]);
                         property = new TransitionProperty(property);
                     } else {
                         // properties: { "opacity": {from: 0, to: 1}, ... }
-                        property = utils.defaults({"property": property}, options.properties[property]);
+                        property = utils.defaults({"property": property}, properties[property]);
                         property = new TransitionProperty(property);
                     }
-                    properties.push(property);
+                    _properties.push(property);
                 }
             }
         }
 
-        transition = new Transition(properties, options);
+        transition = new Transition(_properties, options);
         transition.beginTransition(element);
     };
 
@@ -412,7 +422,7 @@ define(['./utils'], function(utils) {
             }
 
             transitionValues = Transition.getElementTransitionValues(element);
-            transitions = element._transitions;
+            transitions = element._transitions.slice(); // _transitions array may be changed inside this loop
             for (i = 0; i < transitions.length; i++) {
                 transition = transitions[i];
                 transitioningProperties = [];
