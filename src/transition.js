@@ -373,7 +373,7 @@ define(['./utils'], function(utils) {
             if (index < 0) {
                 throw "[Transition.removeToBeTransitionedProperty]: Transition does not have toBeTransitionedProperty '" + propertyName + "'";
             }
-            this.toBeTransitionedPropertyNames.slice(index, 1);
+            this.toBeTransitionedPropertyNames.splice(index, 1);
             this.toBeTransitionedProperties.splice(index, 1);
         },
 
