@@ -185,6 +185,7 @@ define(['./utils'], function(utils) {
             durations = [],
             delays = [],
             timingFunctions = [],
+            regExpResult,
             cssPropertiesLength,
             durationsLength,
             delaysLength,
@@ -205,7 +206,16 @@ define(['./utils'], function(utils) {
             cssProperties   = transitionPropertyCSS.split(commaRegExp);
             durations       = transitionDurationCSS       ? transitionDurationCSS.split(commaRegExp)       : ["0s"];
             delays          = transitionDelayCSS          ? transitionDelayCSS.split(commaRegExp)          : ["0s"];
-            timingFunctions = transitionTimingFunctionCSS ? transitionTimingFunctionCSS.split(commaRegExp) : ["ease"];
+
+            if (!transitionTimingFunctionCSS) {
+                timingFunctions = ["ease"];
+            } else {
+                timingFunctions = [];
+                commaRegExp = /(?:\s*,)?\s*([^(,]+(?:\([^)]+\))?)/g;
+                while (regExpResult = commaRegExp.exec(transitionTimingFunctionCSS) !== null) {
+                    timingFunctions.push(regExpResult[1])
+                }
+            }
 
             cssPropertiesLength = cssProperties.length;
             durationsLength = durations.length;
