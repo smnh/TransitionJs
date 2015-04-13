@@ -135,7 +135,7 @@ define(function() {
          * http://underscorejs.org/docs/underscore.html
          */
         extend: function(obj) {
-            if (!utils.isObject(obj)) return obj;
+            if (!this.isObject(obj)) return obj;
             var source, prop;
             for (var i = 1, length = arguments.length; i < length; i++) {
                 source = arguments[i];
