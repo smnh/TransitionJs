@@ -1075,7 +1075,7 @@ define('transition',['./utils', 'Thenable'], function(utils, Thenable) {
 
             index = transitionValues.cssProperties.indexOf(propertyName);
             if (index < 0) {
-                throw "[Transition.removeTransitionProperty]: Did not find transitionProperty '" + propertyName + "'";
+                throw "[Transition.finishTransitioningProperty]: Did not find transitionProperty '" + propertyName + "'";
             }
             transitionValues.cssProperties.splice(index, 1);
             transitionValues.durations.splice(index, 1);
@@ -1141,7 +1141,7 @@ define('transition',['./utils', 'Thenable'], function(utils, Thenable) {
 
                 index = transitionValues.cssProperties.indexOf(propertyName);
                 if (index < 0) {
-                    throw "[Transition.removeTransitionProperty]: Did not find transitionProperty '" + propertyName + "'";
+                    throw "[Transition.finishTransitioningProperties]: Did not find transitionProperty '" + propertyName + "'";
                 }
                 transitionValues.cssProperties.splice(index, 1);
                 transitionValues.durations.splice(index, 1);
@@ -1250,3 +1250,4 @@ define('transition',['./utils', 'Thenable'], function(utils, Thenable) {
 });
 return require('transition');
 }));
+//# sourceMappingURL=transition.js.map
