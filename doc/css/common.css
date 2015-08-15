@@ -1,0 +1,157 @@
+body {
+    margin: 0;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-size: 14px;
+    color: #333333;
+    background-color: #f5f5f5;
+}
+
+.container {
+    width: 800px;
+}
+
+h2 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+h3 {
+    font-size: 24px;
+    font-weight: 200;
+    letter-spacing: -.5px;
+}
+
+ul, dl, p {
+    line-height: 22px;
+}
+
+.logo {
+    margin: 20px 0;
+    padding-left: 60px;
+}
+
+.logo .rectWrapper {
+    float: left;
+    margin-left: -60px;
+    width: 50px;
+    height: 50px;
+}
+
+.logo .rectWrapper .rect {
+    display: block;
+    width: 48px;
+    height: 48px;
+    border: 1px solid #dddddd;
+    background-color: #ffffff;
+    box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.2);
+}
+
+.logo h1 {
+    margin: 0;
+    line-height: 30px;
+}
+
+.logo-subtitle {
+    margin-bottom: 20px;
+    line-height: 20px;
+}
+
+.features code, .api code {
+    font-family: Monaco, Consolas, "Lucida Console", monospace !important;
+    font-size: 0.9em;
+    color: #006699;
+}
+
+.api ul {
+    margin: 0;
+}
+
+.demos .row {
+    margin-bottom: 32px;
+}
+
+.demos .row .title {
+    margin-bottom: 16px;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.demos .row .title code {
+    font-family: Monaco, Consolas, "Lucida Console", monospace !important;
+}
+
+.demos .row .desc {
+    margin-bottom: 16px;
+    font-size: 14px;
+    line-height: 22px;
+}
+
+.demos .row .desc code {
+    font-family: Monaco, Consolas, "Lucida Console", monospace !important;
+    color: #006699;
+}
+
+.demos .row .code {
+    border-left: 4px solid #bbb;
+    padding-left: 16px;
+    margin: 0 0 16px 0 !important;
+    font-size: 12px !important;
+    background-color: transparent !important;
+}
+
+.demos .row .code code {
+    font-family: Monaco, Consolas, "Lucida Console", monospace !important;
+    line-height: 18px !important;
+}
+
+.demos .row .code .line {
+    background-color: transparent !important;
+}
+
+.demos .row .rect {
+    /*float: left;*/
+    /*margin-left: -75px;*/
+    margin-bottom: 16px;
+    width: 48px;
+    height: 48px;
+    border: 1px solid #dddddd;
+    background-color: #ffffff;
+    box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.2);
+}
+
+.demos .row .runButton {
+    display: inline-block;
+    padding: 4px 10px;
+    line-height: 20px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    background-color: #ffffff;
+    text-align: center;
+    font-family: Monaco, Consolas, "Lucida Console", monospace !important;
+    font-size: 12px !important;
+    cursor: pointer;
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
+    color: #333333;
+    transition-property: box-shadow;
+    transition-duration: 200ms;
+
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.demos .row .runButton:hover {
+    background-color: #eeeeee;
+}
+
+.demos .row .runButton:active {
+    box-shadow: none;
+}

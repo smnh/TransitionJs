@@ -685,7 +685,9 @@ define('transition',['./utils', 'Thenable'], function(utils, Thenable) {
             durationSet = false;
 
         if (arguments.length === 1) {
-            if (utils.isArray(arguments[0])) {
+            if (utils.isString(arguments[0])) {
+                arr = arguments[0].split(" ");
+            } else if (utils.isArray(arguments[0])) {
                 arr = arguments[0];
             } else {
                 obj = arguments[0];
@@ -788,20 +790,23 @@ define('transition',['./utils', 'Thenable'], function(utils, Thenable) {
     Transition.begin = function(element, properties, options) {
         var transition, i, property, _properties = [];
 
-        if ("properties" in properties) {
+        if (properties.hasOwnProperty("properties")) {
             options = properties;
             properties = properties["properties"];
         }
 
-        if (utils.isArray(properties)) {
+        if (utils.isString(properties)) {
+            _properties.push(new TransitionProperty(properties));
+        } else if (utils.isArray(properties)) {
             // properties: [ ... ]
-            if (properties.length && utils.isString(properties[0])) {
+            if (utils.isString(properties[0]) && properties[0].indexOf(" ") === -1) {
                 // properties: ['opacity', '0', '1', ...]
                 _properties.push(new TransitionProperty(properties));
             } else {
                 for (i = 0; i < properties.length; i++) {
                     property = properties[i];
                     if (utils.isArray(property) || !(property instanceof TransitionProperty)) {
+                        // properties: [ ["opacity 0 1"], [ ... ], ... ]
                         // properties: [ ["opacity", 0, 1], [ ... ], ... ]
                         // properties: [ {property: "opacity", from: 0, to: 1}, { ... }, ... ]
                         property = new TransitionProperty(property);
@@ -1015,7 +1020,7 @@ define('transition',['./utils', 'Thenable'], function(utils, Thenable) {
         },
 
         stop: function() {
-            // TODO :)
+            // TODO
         },
 
         handleEvent: function(event) {

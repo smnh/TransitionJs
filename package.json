@@ -1,0 +1,18 @@
+{
+    "name": "transition-js",
+    "description": "JavaScript library that provides a convenient way to create CSS transitions pragmatically.",
+    "version": "0.0.1",
+    "main": "transition.js",
+    "moduleType": [
+        "amd",
+        "globals"
+    ],
+    "keywords": ["animate", "css", "transitions", "javascript", "dom", "utility", "framework"],
+    "author": "smnh (http://smnh.me)",
+    "homepage": "http://transitionjs.org",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/smnh/TransitionJs"
+    }
+}

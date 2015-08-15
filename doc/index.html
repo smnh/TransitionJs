@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Transition.js Demo</title>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <link type="text/css" rel="stylesheet" href="css/shCore.css" />
+    <link type="text/css" rel="stylesheet" href="css/shThemeDefault.css" />
+    <link type="text/css" rel="stylesheet" href="css/common.css" />
+</head>
+<body>
+    <script type="text/javascript" src="js/shCore.js"></script>
+    <script type="text/javascript" src="js/shBrushJScript.js"></script>
+    <script data-main="js/main" src="../lib/require.js"></script>
+
+    <div class="container">
+        <div class="logo">
+            <span class="rectWrapper"><span class="rect"></span></span>
+            <h1>transition.js</h1>
+            <div class="logo-subtitle">Unveiling CSS Transitions</div>
+        </div>
+        <p>
+            <a href="https://github.com/smnh/TransitionJs">transition.js</a> is a JavaScript library that provides a
+            convenient way to create CSS transitions pragmatically.
+        </p>
+        <ul class="features">
+            <li>This project is <a href="https://github.com/smnh/TransitionJs">hosted on GitHub</a></li>
+            <li>It correctly cleans and restarts transitioning properties calling their <code>onTransitionEnd</code> callbacks</li>
+            <li>Correctly adds new transitions to an element with already running transitions.</li>
+            <li>It provides the <code>onTransitionEnd</code> callback that is called not only when the transition was finished,
+                but also when the transition was halted. For example, when a transition is manually stopped (not yet implemented)
+                or another transition with the same transitioning property started on the same element.</li>
+            <li>All transitions scheduled in the same JavaScript execution context stack will be started together in a
+                separate execution context stack.</li>
+        </ul>
+
+        <h2>API</h2>
+        <dl class="api">
+            <dt><code class="api-method">transition.begin(element, properties[, options])</code></dt>
+            <dd>
+                <h3 class="api-method-summary-header">Summary</h3>
+                <p>
+                    The <code>begin</code> method applies CSS transition effect on the passed <code>element</code>
+                    using the passed <code>properties</code> that defines the transition effect.
+                </p>
+                <h3 class="api-method-parameters-header">Parameters</h3>
+                <dl class="api-method-parameters">
+                    <dt><code>element</code></dt>
+                    <dd>The element on which the CSS transition effect will be applied</dd>
+                    <dt><code>properties</code></dt>
+                    <dd>
+                        The properties of a single or multiple CSS transitions. This parameter can take several forms:<br/>
+                        <dl>
+                            <dt>Array: <code>["opacity", "0", "1", "1s", "linear", "0s", onTransitionEndCallback]</code></dt>
+                            <dd>
+                                Array of transition properties and transition values. The first three values are
+                                required and must be specified in the following order: a CSS transition property
+                                name, a value to transition "from" and a value to transition "to". The rest of the
+                                values (duration, delay, timing function and onTransitionEnd callback) are optional
+                                and their order conforms to the CSS
+                                <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transition">transition</a>
+                                property specification: the first value that can be parsed as a time is assigned to
+                                the transition-duration, and the second value that can be parsed as a time is
+                                assigned to transition-delay.
+                            </dd>
+                            <dt>String: <code>"opacity 0 1 1s linear 0s"</code></dt>
+                            <dd>
+                                String with space separated transition properties and transition values. The order and
+                                the requirements of the values in this string must follow the same rules defined for the
+                                values specified inside an array. Due to its nature, this form does not allow specifying
+                                the <code>onTransitionEnd</code> callback.<br/>
+                                Note: some CSS properties (e.g.: transform) can themselves receive a space separated values
+                                such as <code>transform: translateX(200px) rotate(180deg);</code>. In this case, you
+                                should use the "Array" format.
+                            </dd>
+                            <dt>Object: <code>{property: "opacity", from: "0", to: "1"}</code></dt>
+                            <dd>
+                                Using this form, you can specify all the properties you could specify using an
+                                array (<code>property</code> name, <code>from</code> value, <code>to</code> value,
+                                <code>duration</code>, <code>delay</code>, <code>timingFunction</code> and <code>onTransitionEnd</code> callback).
+                                But also the <code>beginFromCurrentValue</code> flag, see examples below for more info.
+                            </dd>
+                            <dt>Array of Arrays, Strings or Objects</dt>
+                            <dd>
+                                Array of Arrays, Strings or Objects, each specifying single transition property. This
+                                form allows transitioning multiple transition properties on a single element at once:<br/>
+                                <code>[["opacity 0 1 1s"], ["color", "red", "blue", "500ms"]]</code>
+                            </dd>
+                        </dl>
+                    </dd>
+                    <dt><code>options</code></dt>
+                    <dd>
+                        Transition options object with the following optional fields:
+                        <dl>
+                            <dt><code>onTransitionEnd</code></dt>
+                            <dd>
+                                A callback function that is called when all transition properties have
+                                finished their transitions. Receives two parameters, <code>element</code> and <code>finished</code>.
+                                The <code>finished</code> parameter will be <code>false</code> if the transition was stopped
+                                or one of the transitioned properties was used in a new transition.
+                            </dd>
+                            <dt><code>onBeforeChangeStyle</code></dt>
+                            <dd>
+                                A callback function that is called before the new CSS property value is applied to the element.
+                                This callback tries to mimic the <a href="http://www.w3.org/TR/css3-transitions/#before-change-style">before-change style</a>
+                                event.
+                            </dd>
+                            <dt><code>onAfterChangeStyle</code></dt>
+                            <dd>
+                                A callback function that is called after the new CSS property value is applied to the element.
+                                This callback tries to mimic the <a href="http://www.w3.org/TR/css3-transitions/#after-change-style">after-change style</a>
+                                event.
+                            </dd>
+                            <dt><code>beginFromCurrentValue</code></dt>
+                            <dd>
+                                Sets the default <code>beginFromCurrentValue</code> value for properties that do not
+                                specify their own <code>beginFromCurrentValue</code> value. See examples below for more
+                                info.
+                            </dd>
+                            <dt><code>duration</code></dt>
+                            <dd>
+                                Sets the default <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transition-duration">transition-duration</a>
+                                for properties that do not specify their own duration.
+                            </dd>
+                            <dt><code>delay</code></dt>
+                            <dd>
+                                Sets the default <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transition-delay">transition-delay</a>
+                                for properties that do not specify their own delay.
+                            </dd>
+                            <dt><code>timingFunction</code></dt>
+                            <dd>
+                                Sets the default <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transition-timing-function">transition-timing-function</a>
+                                for properties that do not specify their own timing-function.
+                            </dd>
+                        </dl>
+                    </dd>
+                </dl>
+                <h3 class="api-method-returns-header">Returns</h3>
+                <p class="api-method-returns">
+                    A thenable object as defined by <a href="https://promisesaplus.com/">Promises/A+</a>. The
+                    <code>onFulfilled</code> callback is called when the transition ends, with the <code>finished</code>
+                    argument that indicates if the transition finished animating.
+                </p>
+            </dd>
+        </dl>
+
+        <h2>Examples</h2>
+
+        <div class="demos">
+            <div class="row" style="margin-bottom: 0;">
+                <div class="title">Single property transition</div>
+                <div class="desc">To perform CSS transition on a single property of an element, specify the element and the
+                    array with transition values.
+                </div>
+                <pre class="brush: js">
+                    function animate(element) {
+                        transition.begin(element, ["background-color", "#ffffff", "#ADB5C7", "500ms", "linear"]);
+                    }
+                </pre>
+                <div class="rect"></div>
+                <div class="runButton" style="margin-bottom: 16px;">animate(element)</div>
+            </div>
+            <div class="row">
+                <div class="desc">
+                    You can also specify a string with space separated values instead of an array. The order of the
+                    values in string must follow the same rules defined for the values specified in an array.
+                </div>
+                <pre class="brush: js">
+                    function animate(element) {
+                        transition.begin(element, "background-color #ffffff #ADB5C7 500ms linear");
+                    }
+                </pre>
+                <div class="rect"></div>
+                <div class="runButton">animate(element)</div>
+            </div>
+            <div class="row" style="margin-bottom: 0;">
+                <div class="title">Multiple properties transition</div>
+                <div class="desc">To perform CSS transition on multiple properties, specify the element and the array of
+                    arrays with transition values.
+                </div>
+                <pre class="brush: js">
+                    function animate(element) {
+                        transition.begin(element, [
+                            ["transform", "translateX(0)", "translateX(200px)", "1s", "ease-in-out"],
+                            ["background-color", "#ffffff", "#ADB5C7", "500ms", "linear"]
+                        ]);
+                    }
+                </pre>
+                <div class="rect"></div>
+                <div class="runButton" style="margin-bottom: 16px;">animate(element)</div>
+            </div>
+            <div class="row">
+                <div class="desc">
+                    As with single property transition, you can specify an array of strings with space separated values.
+                </div>
+                <pre class="brush: js">
+                    function animate(element) {
+                        transition.begin(element, [
+                            "transform translateX(0) translateX(200px) 1s ease-in-out",
+                            "background-color #ffffff #ADB5C7 500ms linear"
+                        ]);
+                    }
+                </pre>
+                <div class="rect"></div>
+                <div class="runButton">animate(element)</div>
+            </div>
+            <div class="row">
+                <div class="title">Multiple properties transition with default transition values</div>
+                <div class="desc">
+                    If some or all properties share the same transition values like duration or timing function,
+                    you can pass these values inside the third <code>options</code> argument. Transition
+                    values specified for a specific transition property will override shared transition values.
+                </div>
+                <pre class="brush: js">
+                    function animate(element) {
+                        transition.begin(element, [
+                            ["transform", "translateX(0)", "translateX(200px)"],
+                            ["background-color", "#ffffff", "#ADB5C7", "2s"]
+                        ], {
+                            // Both "transform" and "background-color" transitions will use "linear" timing function
+                            timingFunction: "linear",
+                            // Only "transform" will use "500ms" duration, the "background-color" transition defines
+                            // its own duration of "2s"
+                            duration: "500ms"
+                        });
+                    }
+                </pre>
+                <div class="rect"></div>
+                <div class="runButton">animate(element)</div>
+            </div>
+            <div class="row">
+                <div class="title">Multiple properties from multiple <code>begin</code> calls</div>
+                <div class="desc">Sometimes it may be easier to transition multiple properties of the same element from
+                    different <code>begin</code> calls. Yet, keeping the requirement that all properties begin their
+                    transitions simultaneously. Transition.js ensures that all transitions executed in the same JavaScript
+                    execution context stack will be started together in a separate execution context stack.
+                </div>
+                <pre class="brush: js">
+                    function animate(element) {
+                        transition.begin(element, ["transform", "translateX(0) rotate(0)", "translateX(200px) rotate(180deg)", "1s", "ease-in-out"]);
+                        transition.begin(element, ["background-color", "#ffffff", "#ADB5C7", "1s", "ease-in-out"]);
+                    }
+                </pre>
+                <div class="rect"></div>
+                <div class="runButton">animate(element)</div>
+            </div>
+            <div class="row">
+                <div class="title">Transition with <code>onTransitionEnd</code> callback</div>
+                <div class="desc">The <code>onTransitionEnd</code> callback is fired when all properties finish their
+                    transitions. This callback receives two parameters: an <code>element</code> on which the
+                    transition was performed, and a boolean flag <code>finished</code> specifying if the
+                    transition was finished by reaching its target value (<code>true</code>), or halted (<code>false</code>),
+                    for example when another transition with the same transition properties has began.
+                </div>
+                <pre class="brush: js">
+                    function animate(element, trFrom, trTo, clrFrom, clrTo, stop) {
+                        transition.begin(element, [
+                            ["transform", "translateX(" + trFrom + ")", "translateX(" + trTo + ")"],
+                            ["background-color", clrFrom, clrTo]
+                        ], {
+                            duration: "1s",
+                            timingFunction: "ease-in-out",
+                            onTransitionEnd: function(element, finished) {
+                                if (!finished || stop) return;
+                                // Animate backwards by switching values
+                                animate(element, trTo, trFrom, clrTo, clrFrom, true);
+                            }
+                        });
+                    }
+                </pre>
+                <div class="rect"></div>
+                <div class="runButton">animate(element, '0', '200px', '#ffffff', '#ADB5C7', false)</div>
+            </div>
+            <div class="row">
+                <div class="title">Properties with <code>onTransitionEnd</code> callback</div>
+                <div class="desc">Every property can have its own <code>onTransitionEnd</code> callback which is executed as
+                    soon as the property finish its transition. Similarly to transition's <code>onTransitionEnd</code>
+                    callback, this callback sldo receives two parameters, the <code>element</code> and the <code>finished</code> flag.
+                </div>
+                <pre class="brush: js">
+                    function animate(element) {
+                        transition.begin(element, [
+                            ["transform", "rotate(0)", "rotate(360deg)", "2s"],
+                            ["background-color", "#ffffff", "#ADB5C7", "1s", function(element, finished) {
+                                if (!finished) return;
+                                transition.begin(element, ["background-color", "#ADB5C7", "#ffffff", "1s"]);
+                            }]
+                        ], {
+                            timingFunction: "linear"
+                        });
+                    }
+                </pre>
+                <div class="rect"></div>
+                <div class="runButton">animate(element)</div>
+            </div>
+            <div class="row">
+                <div class="title">Transition with <code>onBeforeChangeStyle</code> callback</div>
+                <div class="desc">The <code>onBeforeChangeStyle</code> callback is called after the "<code>from</code>" values
+                    of all transition properties were set on the element and before setting the "<code>to</code>" and <code>transition</code>
+                    values. It receives single parameter, the <code>element</code>, on which the transition is performed.
+                    This callback tries to mimic the behaviour of the <a href="http://www.w3.org/TR/css3-transitions/#before-change-style" target="_blank">before-change style</a>
+                    event. This callback is useful when additional element manipulation is required before
+                    beginning the transition, for example setting element's <code>display</code> value to <code>block</code>
+                    when performing fade-in transition.
+                </div>
+                <pre class="brush: js">
+                    function animate(element) {
+                        transition.begin(element, ["opacity 0 1 1s", "transform translateX(0) translateX(200px) 1s ease-in-out"], {
+                            onBeforeChangeStyle: function(element) {
+                                element.style.display = "block";
+                            },
+                            onTransitionEnd: function(element, finished) {
+                                if (!finished) return;
+                                element.style.display = "none";
+                            }
+                        });
+                    }
+                </pre>
+                <div class="rect" style="display: none; background-color: rgb(173, 181, 199);"></div>
+                <div class="runButton">animate(element)</div>
+            </div>
+            <div class="row">
+                <div class="title">Transitioning property from its current value</div>
+                <div class="desc">
+                    Sometimes, when beginning new transition with a property that is already being transitioned, it is
+                    desired to transition that property from its current value. For example, assume you have two transitions,
+                    "fadeIn" and "fadeOut" transitioning values of the "opacity" from 0 to 1 and from 1 to 0 respectively.
+                    To ensure these transitions transition opacity from its current value, set the
+                    <code>beginFromCurrentValue</code> option to <code>true</code>.
+                </div>
+                <pre class="brush: js">
+                    function animate(element) {
+                        // Go ahead and click on the "animate" button while the previous transition is running.
+                        // The transition will begin from the current value of transform and not from 0 or 200px.
+                        if (element._side == "right") {
+                            element._side = "left";
+                            transition.begin(element, "transform translateX(200px) translateX(0) 1s", {
+                                beginFromCurrentValue: true
+                            });
+                        } else {
+                            element._side = "right";
+                            transition.begin(element, "transform translateX(0) translateX(200px) 1s", {
+                                beginFromCurrentValue: true
+                            });
+                        }
+                    }
+                </pre>
+                <div class="rect"></div>
+                <div class="runButton">animate(element)</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
