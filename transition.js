@@ -1255,4 +1255,3 @@ define('transition',['./utils', 'Thenable'], function(utils, Thenable) {
 });
 return require('transition');
 }));
-//# sourceMappingURL=transition.js.map
