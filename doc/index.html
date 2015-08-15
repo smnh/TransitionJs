@@ -2,7 +2,7 @@
 <html>
 <head lang="en">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Transition.js Demo</title>
+    <title>transition.js</title>
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800' rel='stylesheet' type='text/css'>
     <link type="text/css" rel="stylesheet" href="css/shCore.css" />
     <link type="text/css" rel="stylesheet" href="css/shThemeDefault.css" />
@@ -11,7 +11,7 @@
 <body>
     <script type="text/javascript" src="js/shCore.js"></script>
     <script type="text/javascript" src="js/shBrushJScript.js"></script>
-    <script data-main="js/main" src="../lib/require.js"></script>
+    <script data-main="js/main" src="js/require.js"></script>
 
     <div class="container">
         <div class="logo">
@@ -25,15 +25,16 @@
         </p>
         <ul class="features">
             <li>This project is <a href="https://github.com/smnh/TransitionJs">hosted on GitHub</a></li>
-            <li>It correctly cleans and restarts transitioning properties calling their <code>onTransitionEnd</code> callbacks</li>
+            <li>Correctly cleans and restarts CSS transition properties while calling their <code>onTransitionEnd</code> callbacks</li>
             <li>Correctly adds new transitions to an element with already running transitions.</li>
-            <li>It provides the <code>onTransitionEnd</code> callback that is called not only when the transition was finished,
+            <li>Provides the <code>onTransitionEnd</code> callback that is called not only when the transition was finished,
                 but also when the transition was halted. For example, when a transition is manually stopped (not yet implemented)
-                or another transition with the same transitioning property started on the same element.</li>
+                or another transition with the same transition property started on the same element.</li>
             <li>All transitions scheduled in the same JavaScript execution context stack will be started together in a
                 separate execution context stack.</li>
+            <li>Supports AMD and Global scope inclusion.</li>
         </ul>
-
+        <a href="js/transition.min.js" class="downloadButton"  download>Download</a>
         <h2>API</h2>
         <dl class="api">
             <dt><code class="api-method">transition.begin(element, properties[, options])</code></dt>
@@ -41,15 +42,15 @@
                 <h3 class="api-method-summary-header">Summary</h3>
                 <p>
                     The <code>begin</code> method applies CSS transition effect on the passed <code>element</code>
-                    using the passed <code>properties</code> that defines the transition effect.
+                    using the passed <code>properties</code> that define the transition effect.
                 </p>
                 <h3 class="api-method-parameters-header">Parameters</h3>
                 <dl class="api-method-parameters">
                     <dt><code>element</code></dt>
-                    <dd>The element on which the CSS transition effect will be applied</dd>
+                    <dd><p>The element on which the CSS transition effect will be applied.</p></dd>
                     <dt><code>properties</code></dt>
                     <dd>
-                        The properties of a single or multiple CSS transitions. This parameter can take several forms:<br/>
+                        <p>The transition properties of a single or multiple CSS transitions. This parameter can take several forms:</p>
                         <dl>
                             <dt>Array: <code>["opacity", "0", "1", "1s", "linear", "0s", onTransitionEndCallback]</code></dt>
                             <dd>
@@ -69,14 +70,14 @@
                                 the requirements of the values in this string must follow the same rules defined for the
                                 values specified inside an array. Due to its nature, this form does not allow specifying
                                 the <code>onTransitionEnd</code> callback.<br/>
-                                Note: some CSS properties (e.g.: transform) can themselves receive a space separated values
+                                Note: some CSS properties (e.g.: <code>transform</code>) can themselves receive a space separated values
                                 such as <code>transform: translateX(200px) rotate(180deg);</code>. In this case, you
-                                should use the "Array" format.
+                                should use the "Array" form.
                             </dd>
                             <dt>Object: <code>{property: "opacity", from: "0", to: "1"}</code></dt>
                             <dd>
-                                Using this form, you can specify all the properties you could specify using an
-                                array (<code>property</code> name, <code>from</code> value, <code>to</code> value,
+                                Using this form, you can specify all the properties you can specify using the
+                                array form (<code>property</code> name, <code>from</code> value, <code>to</code> value,
                                 <code>duration</code>, <code>delay</code>, <code>timingFunction</code> and <code>onTransitionEnd</code> callback).
                                 But also the <code>beginFromCurrentValue</code> flag, see examples below for more info.
                             </dd>
@@ -90,7 +91,7 @@
                     </dd>
                     <dt><code>options</code></dt>
                     <dd>
-                        Transition options object with the following optional fields:
+                        <p>Transition options object with the following optional fields:</p>
                         <dl>
                             <dt><code>onTransitionEnd</code></dt>
                             <dd>
@@ -120,17 +121,17 @@
                             <dt><code>duration</code></dt>
                             <dd>
                                 Sets the default <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transition-duration">transition-duration</a>
-                                for properties that do not specify their own duration.
+                                for the transition properties that do not specify their own duration. Default is <code>400ms</code>.
                             </dd>
                             <dt><code>delay</code></dt>
                             <dd>
                                 Sets the default <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transition-delay">transition-delay</a>
-                                for properties that do not specify their own delay.
+                                for the transition properties that do not specify their own delay. Default is <code>0s</code>.
                             </dd>
                             <dt><code>timingFunction</code></dt>
                             <dd>
                                 Sets the default <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transition-timing-function">transition-timing-function</a>
-                                for properties that do not specify their own timing-function.
+                                for the transition properties that do not specify their own timing-function. Default is <code>ease</code>.
                             </dd>
                         </dl>
                     </dd>
@@ -348,7 +349,34 @@
                 <div class="rect"></div>
                 <div class="runButton">animate(element)</div>
             </div>
+            <div class="row">
+                <div class="title">Adding new transition to an element with already running transition</div>
+                <div class="desc">
+                    You can safely add new transitions to an element with already running transitions.
+                </div>
+                <pre class="brush: js">
+                    function animate(element) {
+                        element.style.backgroundColor = "#ffffff";
+                        transition.begin(element, "transform translateX(0) translateX(200px) 2s ease-in-out");
+                        window.clearTimeout(element._timeout);
+                        element._timeout = window.setTimeout(function() {
+                            transition.begin(element, "background-color #ffffff #ADB5C7 1s linear");
+                        }, 1000);
+                    }
+                </pre>
+                <div class="rect"></div>
+                <div class="runButton">animate(element)</div>
+            </div>
         </div>
     </div>
+
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-66365385-1', 'auto');
+        ga('send', 'pageview');
+    </script>
 </body>
 </html>

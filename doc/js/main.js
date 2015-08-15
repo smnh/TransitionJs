@@ -1,14 +1,14 @@
 requirejs.config({
     baseUrl: 'js',
     paths: {
-        underscore: '../../lib/underscore',
-        Thenable: '../../lib/thenable.min'
+        underscore: 'underscore',
+        Thenable: 'thenable.min'
     }
 });
 
 define([
     'underscore',
-    '../../transition.min',
+    'transition.min',
     'bezier.calc'
 ], function(_, transition, BezierCalc) {
 

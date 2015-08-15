@@ -54,6 +54,7 @@ ul, dl, p {
 .logo h1 {
     margin: 0;
     line-height: 30px;
+    font-weight: 400;
 }
 
 .logo-subtitle {
@@ -66,6 +67,35 @@ ul, dl, p {
     font-size: 0.9em;
     color: #006699;
 }
+
+.downloadButton {
+    display: inline-block;
+    padding: 4px 10px;
+    line-height: 20px;
+    border: 1px solid #ADB5C7;
+    border-radius: 4px;
+    background-color: #ADB5C7;
+    text-align: center;
+    font-size: 12px !important;
+    cursor: pointer;
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+    transition-property: box-shadow;
+    transition-duration: 200ms;
+    text-decoration: none;
+
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.downloadButton:active {
+    box-shadow: none;
+}
+
 
 .api ul {
     margin: 0;
