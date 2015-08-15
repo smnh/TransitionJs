@@ -1,5 +1,6 @@
 # TransitionJs
-A JavaScript library that provides a convenient way to create CSS transitions pragmatically.
+A JavaScript library that provides a convenient way to create CSS transitions pragmatically.  
+Please visit [http://transitionjs.org](http://transitionjs.org) for more info.
 
 ## Usage
 
