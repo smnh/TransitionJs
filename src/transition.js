@@ -186,8 +186,11 @@ define(['./utils', 'Thenable'], function(utils, Thenable) {
 
         return {
             then: transition.thenable.proxy.then,
-            stop: function() {
-                transition.stop();
+            pause: function() {
+                transition.pause();
+            },
+            remove: function() {
+                transition.remove();
             }
         };
     };
@@ -366,7 +369,11 @@ define(['./utils', 'Thenable'], function(utils, Thenable) {
 
         },
 
-        stop: function() {
+        pause: function() {
+            // TODO
+        },
+
+        remove: function() {
             // TODO
         },
 
