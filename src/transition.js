@@ -145,38 +145,44 @@ define(['./utils', 'Thenable'], function(utils, Thenable) {
         if (utils.isString(properties)) {
             _properties.push(new TransitionProperty(properties));
         } else if (utils.isArray(properties)) {
-            // properties: [ ... ]
+            // properties == [ ... ]
             if (utils.isString(properties[0]) && properties[0].indexOf(" ") === -1) {
-                // properties: ['opacity', '0', '1', ...]
+                // properties == ['opacity', '0', '1', ...]
                 _properties.push(new TransitionProperty(properties));
             } else {
                 for (i = 0; i < properties.length; i++) {
                     property = properties[i];
                     if (utils.isArray(property) || !(property instanceof TransitionProperty)) {
-                        // properties: [ ["opacity 0 1"], [ ... ], ... ]
-                        // properties: [ ["opacity", 0, 1], [ ... ], ... ]
-                        // properties: [ {property: "opacity", from: 0, to: 1}, { ... }, ... ]
+                        // properties == [ ["opacity 0 1"], [ ... ], ... ]
+                        // properties == [ ["opacity", 0, 1], [ ... ], ... ]
+                        // properties == [ {property: "opacity", from: 0, to: 1}, { ... }, ... ]
                         property = new TransitionProperty(property);
                     }
                     // If not above, then property is instance of TransitionProperty
-                    // properties: [new TransitionProperty("opacity", 0, 1)]
+                    // properties == [new TransitionProperty("opacity", 0, 1)]
                     _properties.push(property);
                 }
             }
         } else {
-            // properties: { ... }
-            for (property in properties) {
-                if (properties.hasOwnProperty(property)) {
-                    if (utils.isArray(properties[property])) {
-                        // properties: { "opacity": [0, 1], ... }
-                        property = [property].concat(properties[property]);
-                        property = new TransitionProperty(property);
-                    } else {
-                        // properties: { "opacity": {from: 0, to: 1}, ... }
-                        property = utils.defaults({"property": property}, properties[property]);
-                        property = new TransitionProperty(property);
+            // properties == { ... }
+            if ("property" in properties) {
+                // properties == { property: "opacity", from: 0, to: 1 }
+                property = new TransitionProperty(properties);
+                _properties.push(property);
+            } else {
+                for (property in properties) {
+                    if (properties.hasOwnProperty(property)) {
+                        if (utils.isArray(properties[property])) {
+                            // properties == { "opacity": [0, 1], ... }
+                            property = [property].concat(properties[property]);
+                            property = new TransitionProperty(property);
+                        } else {
+                            // properties == { "opacity": {from: 0, to: 1}, ... }
+                            property = utils.defaults({"property": property}, properties[property]);
+                            property = new TransitionProperty(property);
+                        }
+                        _properties.push(property);
                     }
-                    _properties.push(property);
                 }
             }
         }

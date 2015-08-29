@@ -25,6 +25,7 @@
         </p>
         <ul class="features">
             <li>This project is <a href="https://github.com/smnh/TransitionJs">hosted on GitHub</a></li>
+            <li>No dependencies on other libraries</li>
             <li>Correctly cleans and restarts CSS transition properties while calling their <code>onTransitionEnd</code> callbacks</li>
             <li>Correctly adds new transitions to an element with already running transitions.</li>
             <li>Provides the <code>onTransitionEnd</code> callback that is called not only when the transition was finished,
@@ -148,7 +149,7 @@
         <h2>Examples</h2>
 
         <div class="demos">
-            <div class="row" style="margin-bottom: 0;">
+            <div class="row notLastInSection">
                 <div class="title">Single property transition</div>
                 <div class="desc">To perform CSS transition on a single property of an element, specify the element and the
                     array with transition values.
@@ -159,9 +160,9 @@
                     }
                 </pre>
                 <div class="rect"></div>
-                <div class="runButton" style="margin-bottom: 16px;">animate(element)</div>
+                <div class="runButton">animate(element)</div>
             </div>
-            <div class="row">
+            <div class="row notLastInSection">
                 <div class="desc">
                     You can also specify a string with space separated values instead of an array. The order of the
                     values in string must follow the same rules defined for the values specified in an array.
@@ -174,7 +175,25 @@
                 <div class="rect"></div>
                 <div class="runButton">animate(element)</div>
             </div>
-            <div class="row" style="margin-bottom: 0;">
+            <div class="row">
+                <div class="desc">
+                    You have also more verbose way to specify the transition values as an object.
+                </div>
+                <pre class="brush: js">
+                    function animate(element) {
+                        transition.begin(element, {
+                            property: "background-color",
+                            from: "#ffffff",
+                            to: "#ADB5C7",
+                            duration: "500ms",
+                            timingFunction: "linear"
+                        });
+                    }
+                </pre>
+                <div class="rect"></div>
+                <div class="runButton">animate(element)</div>
+            </div>
+            <div class="row notLastInSection">
                 <div class="title">Multiple properties transition</div>
                 <div class="desc">To perform CSS transition on multiple properties, specify the element and the array of
                     arrays with transition values.
@@ -188,7 +207,7 @@
                     }
                 </pre>
                 <div class="rect"></div>
-                <div class="runButton" style="margin-bottom: 16px;">animate(element)</div>
+                <div class="runButton">animate(element)</div>
             </div>
             <div class="row">
                 <div class="desc">
@@ -349,7 +368,7 @@
                 <div class="rect"></div>
                 <div class="runButton">animate(element)</div>
             </div>
-            <div class="row">
+            <div class="row notLastInSection">
                 <div class="title">Adding new transition to an element with already running transition</div>
                 <div class="desc">
                     You can safely add new transitions to an element with already running transitions.
@@ -362,6 +381,21 @@
                         element._timeout = window.setTimeout(function() {
                             transition.begin(element, "background-color #ffffff #ADB5C7 1s linear");
                         }, 1000);
+                    }
+                </pre>
+                <div class="rect"></div>
+                <div class="runButton">animate(element)</div>
+            </div>
+            <div class="row">
+                <div class="desc">
+                    Of course, same can be done using CSS transition delay property.
+                </div>
+                <pre class="brush: js">
+                    function animate(element) {
+                        transition.begin(element, [
+                            "transform translateX(0) translateX(200px) 2s ease-in-out",
+                            "background-color #ffffff #ADB5C7 1s linear 1s"
+                        ]);
                     }
                 </pre>
                 <div class="rect"></div>

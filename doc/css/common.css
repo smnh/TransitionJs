@@ -105,6 +105,10 @@ ul, dl, p {
     margin-bottom: 32px;
 }
 
+.demos .row.notLastInSection {
+    margin-bottom: 16px;
+}
+
 .demos .row .title {
     margin-bottom: 16px;
     font-size: 17px;
