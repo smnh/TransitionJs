@@ -1,5 +1,9 @@
 define(['./utils', 'Thenable'], function(utils, Thenable) {
 
+    var timeRegExp = /[-+]?\d+(?:.\d+)?(?:s|ms)/i,
+        transitionPropertyCommaRegExp = /\s*,\s*/,
+        transitionTimingFunctionRegExpExec = /(?:\s*,)?\s*([^(,]+(?:\([^)]+\))?)/g;
+
     /**
      * TransitionProperty(property, from, to[, arg1[, arg2[, arg3[, arg4]]]])
      *
@@ -28,7 +32,6 @@ define(['./utils', 'Thenable'], function(utils, Thenable) {
      */
     function TransitionProperty() {
         var i, argument, obj = null, arr = null,
-            timeRegExp = /[-+]?\d+(?:.\d+)?(?:s|ms)/i,
             durationSet = false;
 
         if (arguments.length === 1) {
@@ -202,7 +205,7 @@ define(['./utils', 'Thenable'], function(utils, Thenable) {
     };
 
     Transition.getElementTransitionValues = function(element) {
-        var i, commaRegExp = /\s*,\s*/,
+        var i,
             transitionPropertyCSS,
             transitionDurationCSS,
             transitionDelayCSS,
@@ -229,16 +232,15 @@ define(['./utils', 'Thenable'], function(utils, Thenable) {
             transitionDelayCSS = element.style[utils.transitionDelay];
             transitionTimingFunctionCSS = element.style[utils.transitionTimingFunction];
 
-            cssProperties   = transitionPropertyCSS.split(commaRegExp);
-            durations       = transitionDurationCSS       ? transitionDurationCSS.split(commaRegExp)       : ["0s"];
-            delays          = transitionDelayCSS          ? transitionDelayCSS.split(commaRegExp)          : ["0s"];
+            cssProperties   = transitionPropertyCSS.split(transitionPropertyCommaRegExp);
+            durations       = transitionDurationCSS ? transitionDurationCSS.split(transitionPropertyCommaRegExp) : ["0s"];
+            delays          = transitionDelayCSS    ? transitionDelayCSS.split(transitionPropertyCommaRegExp)    : ["0s"];
 
             if (!transitionTimingFunctionCSS) {
                 timingFunctions = ["ease"];
             } else {
                 timingFunctions = [];
-                commaRegExp = /(?:\s*,)?\s*([^(,]+(?:\([^)]+\))?)/g;
-                while (regExpResult = commaRegExp.exec(transitionTimingFunctionCSS) !== null) {
+                while (regExpResult = transitionTimingFunctionRegExpExec.exec(transitionTimingFunctionCSS) !== null) {
                     timingFunctions.push(regExpResult[1])
                 }
             }

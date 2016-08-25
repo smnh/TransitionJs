@@ -1,2 +1,2 @@
-return require('transition');
+return requirejs('transition');
 }));

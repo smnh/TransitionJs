@@ -8,6 +8,8 @@
 (function(root, factory) {
     if (typeof define === 'function' && define.amd) {
         define([], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory();
     } else {
         root.transition = factory();
     }
@@ -455,7 +457,10 @@ define('utils',[],function() {
         transitionDelay,
         transitionTimingFunction,
         transitionEndEvent,
-        capsRegexp = /[A-Z]/g,
+        capsRegExp = /[A-Z]/g,
+        firstCapRegExp = /^[A-Z]/,
+        dashRegExp = /-([a-z])/g,
+        msRegExp = /^ms-/,
         eventLoopCallbacks = [];
 
     transEndEventNames = {
@@ -539,19 +544,19 @@ define('utils',[],function() {
         transitionEndEvent: transitionEndEvent,
     
         camelCaseToDashes: function(str) {
-            return str.replace(capsRegexp, replacementFunction);
+            return str.replace(capsRegExp, replacementFunction);
         },
     
         domToCSS: function(name) {
-            return name.replace(/[A-Z]/g, function(match) {
+            return name.replace(capsRegExp, function(match) {
                 return '-' + match.toLowerCase();
-            }).replace(/^ms-/, '-ms-');
+            }).replace(msRegExp, '-ms-');
         },
 
         cssToDOM: function(name) {
-            return name.replace(/-([a-z])/g, function(match, p1) {
+            return name.replace(dashRegExp, function(match, p1) {
                 return p1.toUpperCase();
-            }).replace(/^[A-Z]/, function(match) {
+            }).replace(firstCapRegExp, function(match) {
                 return match.toLowerCase();
             });
         },
@@ -653,6 +658,10 @@ define("Thenable", function(){});
 
 define('transition',['./utils', 'Thenable'], function(utils, Thenable) {
 
+    var timeRegExp = /[-+]?\d+(?:.\d+)?(?:s|ms)/i,
+        transitionPropertyCommaRegExp = /\s*,\s*/,
+        transitionTimingFunctionRegExpExec = /(?:\s*,)?\s*([^(,]+(?:\([^)]+\))?)/g;
+
     /**
      * TransitionProperty(property, from, to[, arg1[, arg2[, arg3[, arg4]]]])
      *
@@ -681,7 +690,6 @@ define('transition',['./utils', 'Thenable'], function(utils, Thenable) {
      */
     function TransitionProperty() {
         var i, argument, obj = null, arr = null,
-            timeRegExp = /[-+]?\d+(?:.\d+)?(?:s|ms)/i,
             durationSet = false;
 
         if (arguments.length === 1) {
@@ -855,7 +863,7 @@ define('transition',['./utils', 'Thenable'], function(utils, Thenable) {
     };
 
     Transition.getElementTransitionValues = function(element) {
-        var i, commaRegExp = /\s*,\s*/,
+        var i,
             transitionPropertyCSS,
             transitionDurationCSS,
             transitionDelayCSS,
@@ -882,16 +890,15 @@ define('transition',['./utils', 'Thenable'], function(utils, Thenable) {
             transitionDelayCSS = element.style[utils.transitionDelay];
             transitionTimingFunctionCSS = element.style[utils.transitionTimingFunction];
 
-            cssProperties   = transitionPropertyCSS.split(commaRegExp);
-            durations       = transitionDurationCSS       ? transitionDurationCSS.split(commaRegExp)       : ["0s"];
-            delays          = transitionDelayCSS          ? transitionDelayCSS.split(commaRegExp)          : ["0s"];
+            cssProperties   = transitionPropertyCSS.split(transitionPropertyCommaRegExp);
+            durations       = transitionDurationCSS ? transitionDurationCSS.split(transitionPropertyCommaRegExp) : ["0s"];
+            delays          = transitionDelayCSS    ? transitionDelayCSS.split(transitionPropertyCommaRegExp)    : ["0s"];
 
             if (!transitionTimingFunctionCSS) {
                 timingFunctions = ["ease"];
             } else {
                 timingFunctions = [];
-                commaRegExp = /(?:\s*,)?\s*([^(,]+(?:\([^)]+\))?)/g;
-                while (regExpResult = commaRegExp.exec(transitionTimingFunctionCSS) !== null) {
+                while (regExpResult = transitionTimingFunctionRegExpExec.exec(transitionTimingFunctionCSS) !== null) {
                     timingFunctions.push(regExpResult[1])
                 }
             }
@@ -1266,5 +1273,5 @@ define('transition',['./utils', 'Thenable'], function(utils, Thenable) {
     };
 
 });
-return require('transition');
+return requirejs('transition');
 }));

@@ -9,7 +9,10 @@ define(function() {
         transitionDelay,
         transitionTimingFunction,
         transitionEndEvent,
-        capsRegexp = /[A-Z]/g,
+        capsRegExp = /[A-Z]/g,
+        firstCapRegExp = /^[A-Z]/,
+        dashRegExp = /-([a-z])/g,
+        msRegExp = /^ms-/,
         eventLoopCallbacks = [];
 
     transEndEventNames = {
@@ -93,19 +96,19 @@ define(function() {
         transitionEndEvent: transitionEndEvent,
     
         camelCaseToDashes: function(str) {
-            return str.replace(capsRegexp, replacementFunction);
+            return str.replace(capsRegExp, replacementFunction);
         },
     
         domToCSS: function(name) {
-            return name.replace(/[A-Z]/g, function(match) {
+            return name.replace(capsRegExp, function(match) {
                 return '-' + match.toLowerCase();
-            }).replace(/^ms-/, '-ms-');
+            }).replace(msRegExp, '-ms-');
         },
 
         cssToDOM: function(name) {
-            return name.replace(/-([a-z])/g, function(match, p1) {
+            return name.replace(dashRegExp, function(match, p1) {
                 return p1.toUpperCase();
-            }).replace(/^[A-Z]/, function(match) {
+            }).replace(firstCapRegExp, function(match) {
                 return match.toLowerCase();
             });
         },
