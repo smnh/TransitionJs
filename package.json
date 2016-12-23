@@ -1,0 +1,50 @@
+{
+  "name": "transitionjs",
+  "version": "0.0.2",
+  "description": "A JavaScript library that provides a convenient way to create CSS transitions pragmatically http://transitionjs.org",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smnh/TransitionJs.git"
+  },
+  "keywords": [
+    "animate",
+    "animation",
+    "animations",
+    "transition",
+    "transitions",
+    "cssanimation",
+    "cssanimations",
+    "csstransition",
+    "csstransitions",
+    "css",
+    "js",
+    "javascript",
+    "html",
+    "dom",
+    "utility",
+    "framework",
+    "library",
+    "pragmatically"
+  ],
+  "author": "smnh",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/smnh/TransitionJs/issues"
+  },
+  "homepage": "http://transitionjs.org",
+  "devDependencies": {
+    "bluebird": "^3.4.7",
+    "babel-core": "^6.21.0",
+    "babel-loader": "^6.2.10",
+    "babel-preset-es2015": "^6.18.0",
+    "webpack": "^1.14.0"
+  }
+}

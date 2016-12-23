@@ -1,8 +1,7 @@
 requirejs.config({
     baseUrl: 'js',
     paths: {
-        underscore: 'underscore',
-        Thenable: 'thenable.min'
+        underscore: 'underscore'
     }
 });
 
@@ -64,7 +63,7 @@ define([
 
             transition
                 .begin(this.logoRectWrapper, ["transform", "scale(1.0)", "scale(1.2)", (duration / 2) + "ms", cubicBezierFirstHalfCSS])
-                .then(function() {
+                .promise.then(function() {
                     transition.begin(self.logoRectWrapper, ["transform", "scale(1.2)", "scale(1.0)", (duration / 2) + "ms", cubicBezierSecondHalfCSS]);
                 });
             transition
@@ -74,7 +73,7 @@ define([
                         transition.begin(self.logoRect, ["backgroundColor", "#adb5c7", "#ffffff", (duration / 2) + "ms", "ease-in-out"]);
                     }]
                 ])
-                .then(function() {
+                .promise.then(function() {
                     self.scheduleLogoAnimation();
                 });
         },

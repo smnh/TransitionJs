@@ -1,0 +1,21 @@
+.runButton {
+    margin-bottom: 20px;
+    display: inline-block;
+    padding: 0 10px;
+    height: 30px;
+    line-height: 30px;
+    cursor: pointer;
+    border: 1px solid #666666;
+}
+
+.rect {
+    position: relative;
+    top: 0;
+    left: 0;
+    margin-bottom: 16px;
+    width: 48px;
+    height: 48px;
+    border: 1px solid #dddddd;
+    background-color: #ffffff;
+    box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.2);
+}

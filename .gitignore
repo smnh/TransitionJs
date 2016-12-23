@@ -1,1 +1,4 @@
 .idea
+deploy.sh
+doc/demo_files
+node_modules

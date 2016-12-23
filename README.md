@@ -67,7 +67,14 @@ Sets the default [transition-timing-function](https://developer.mozilla.org/en-U
 
 ### Returns
 
-A thenable object as defined by [Promises/A+](https://promisesaplus.com/). The `onFulfilled` callback is called when the transition ends, with the `finished` argument that indicates if the transition finished animating.
+An object with a `promise` field holding a Promise that will be resolved when the transition ends. In a similar way to the `onFulfilled` callback, the promise resolves with an object having two fields: the animated `element` and the `finished` flag that indicating if the transition finished animating.
+
+```JavaScript
+transition.begin(element, "opacity 1 0 2s").promise.then(function(result) {
+    // result.element - the animated element
+    // result.finished - is the transition finished animating or was halted in the middle
+});
+```
 
 ## Advanced Usage Example
 

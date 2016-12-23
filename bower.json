@@ -1,11 +1,11 @@
 {
     "name": "transitionjs",
-    "main": "transition.js",
-    "version": "0.0.1",
+    "main": "web_bin/transition.js",
+    "version": "0.0.2",
     "authors": [
         "smnh (http://smnh.me)"
     ],
-    "description": "JavaScript library that provides a convenient way to create CSS transitions pragmatically.",
+    "description": "JavaScript library that provides a convenient way to create CSS transitions pragmatically http://transitionjs.org",
     "moduleType": [
         "amd",
         "globals"
@@ -16,14 +16,19 @@
         "animations",
         "transition",
         "transitions",
+        "cssanimation",
+        "cssanimations",
+        "csstransition",
+        "csstransitions",
         "css",
-        "javascript",
         "js",
+        "javascript",
         "html",
         "dom",
         "utility",
         "framework",
-        "library"
+        "library",
+        "pragmatically"
     ],
     "license": "MIT",
     "homepage": "http://transitionjs.org",

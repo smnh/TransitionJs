@@ -139,9 +139,10 @@
                 </dl>
                 <h3 class="api-method-returns-header">Returns</h3>
                 <p class="api-method-returns">
-                    A thenable object as defined by <a href="https://promisesaplus.com/">Promises/A+</a>. The
-                    <code>onFulfilled</code> callback is called when the transition ends, with the <code>finished</code>
-                    argument that indicates if the transition finished animating.
+                    An object with a <code>promise</code> field holding a Promise that will be resolved when the transition ends.
+                    In a similar way to the <code>onFulfilled</code> callback, the promise resolves with an object having two
+                    fields: the animated <code>element</code> and the <code>finished</code> flag that indicating if the
+                    transition finished animating.
                 </p>
             </dd>
         </dl>
