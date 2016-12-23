@@ -1,15 +1,22 @@
 # TransitionJs
 A JavaScript library that provides a convenient way to create CSS transitions pragmatically.  
+
+- Correctly cleans and restarts CSS transition properties while calling their `onTransitionEnd` callbacks
+- Correctly adds new transitions to an element with already running transitions.
+- Provides the onTransitionEnd callback that is called not only when the transition was finished, but also when the transition was halted. For example, when a transition was manually stopped (not yet implemented) or another transition with the same transition property started on the same element.
+- All transitions scheduled in the same JavaScript execution context stack will be started together and in a separate execution context stack.
+- Supports AMD and Global scope inclusion.
+
 Please visit [http://transitionjs.org](http://transitionjs.org) for more info.
 
 ## Basic Usage
 
-Fading out an element while scaling it down from x1 to x0.5
+Following code fades out an element by transitioning its `opacity` from 1 to 0 and its `scale` from 1 to 0.5. Both properties transitioned with a duration of 400 milliseconds. After transition finishes, the element's `display` is set to `none`.
 
 ```JavaScript
 transition.begin(element, [
-    "opacity 1 0",
-    "transform scale(1) scale(0.5)"
+        "opacity 1 0",
+        "transform scale(1) scale(0.5)"
     ], {
         // Duration of 400ms is used both for opacity and transform
         duration: "400ms",
