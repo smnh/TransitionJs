@@ -2,3 +2,4 @@
 deploy.sh
 doc/demo_files
 node_modules
+npm-debug.log

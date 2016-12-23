@@ -610,7 +610,10 @@ Transition.prototype = {
                 onTransitionEnd(element, this.allPropertiesWereFinished);
             }
         }
-        this.resolve(this.allPropertiesWereFinished);
+        this.resolve({
+            element: element,
+            finished: this.allPropertiesWereFinished
+        });
     }
 
 };
