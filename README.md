@@ -1,17 +1,17 @@
 # TransitionJs
 A JavaScript library that provides a convenient way to create CSS transitions pragmatically.  
 
-- Correctly cleans and restarts CSS transition properties while calling their `onTransitionEnd` callbacks
+- Correctly cleans and restarts CSS transition properties while calling their `onTransitionEnd` callbacks.
 - Correctly adds new transitions to an element with already running transitions.
 - Provides the onTransitionEnd callback that is called not only when the transition was finished, but also when the transition was halted. For example, when a transition was manually stopped (not yet implemented) or another transition with the same transition property started on the same element.
 - All transitions scheduled in the same JavaScript execution context stack will be started together and in a separate execution context stack.
 - Supports AMD and Global scope inclusion.
 
-Please visit [http://transitionjs.org](http://transitionjs.org) for more info.
+Visit [http://transitionjs.org](http://transitionjs.org) for more info and examples.
 
 ## Basic Usage
 
-Following code fades out an element by transitioning its `opacity` from 1 to 0 and its `scale` from 1 to 0.5. Both properties transitioned with a duration of 400 milliseconds. After transition finishes, the element's `display` is set to `none`.
+Following code fades out an element by transitioning its `opacity` from `1` to `0` and its `scale` from `1` to `0.5`. Both properties transitioned with a duration of 400 milliseconds. After transition finishes, the element's `display` is set to `none`.
 
 ```JavaScript
 transition.begin(element, [
@@ -26,8 +26,9 @@ transition.begin(element, [
                 // If the transition was finished naturally, hide the element.
                 element.style.display = "none";
             }
+        }
     }
-});
+);
 ```
 
 ## API
@@ -40,20 +41,22 @@ The `begin` method applies CSS transition effect on the passed `element` using t
 
 ### Parameters
 
-`element` - The element on which the CSS transition effect will be applied.c
+`element` - The element on which the CSS transition effect will be applied.
 
 `properties` - The transition properties of a single or multiple CSS transitions. This parameter can take several forms:
 
-* Array: `["opacity", "0", "1", "1s", "linear", "0s", onTransitionEndCallback]`  
+* Array: `[propertyName, fromValue, toValue[, duration, timingFunction, delay, onTransitionEnd]]`  
+example: `["opacity", "0", "1", "1s", "linear", "0s", onTransitionEndCallback]`  
 Array of transition properties and transition values. The first three values are required and must be specified in the following order: a CSS transition property name, a value to transition "from" and a value to transition "to". The rest of the values (duration, delay, timing function and onTransitionEnd callback) are optional and their order conforms to the CSS [transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition) property specification: the first value that can be parsed as a time is assigned to the transition-duration, and the second value that can be parsed as a time is assigned to transition-delay.
-* String: `"opacity 0 1 1s linear 0s"`  
-String with space separated transition properties and transition values. The order and the requirements of the values in this string must follow the same rules defined for the values specified inside an array. Due to its nature, this form does not allow specifying the `onTransitionEnd` callback.
+* String: `` `${propertyName} ${fromValue} ${toValue}[ ${duration} ${timingFunction} ${delay}]` ``  
+Example: `"opacity 0 1 1s linear 0s"`  
+String with space separated transition properties and transition values. The order and the requirements of the values in this string must follow the same rules defined for the values specified inside an array. Due to its nature, this form does not allow specifying the `onTransitionEnd` callback.  
 Note: some CSS properties (e.g.: transform) can themselves receive a space separated values such as `transform: translateX(200px) rotate(180deg);`. In this case, you should use the "Array" form.
 * Object: `{property: "opacity", from: "0", to: "1"}`  
-Using this form, you can specify all the properties you can specify using the array form (`property` name, `from` value, `to` value, `duration`, `delay`, `timingFunction` and `onTransitionEnd` callback). But also the `beginFromCurrentValue` flag, visit [http://transitionjs.org](http://transitionjs.org) for more info and examples.
+Using this form, you can specify all the properties you can specify using the array form (`property` name, `from` value, `to` value, `duration`, `delay`, `timingFunction` and `onTransitionEnd` callback). In addition, you can specify the `beginFromCurrentValue` flag. Visit [http://transitionjs.org](http://transitionjs.org) for more info and examples.
 * Array of Arrays, Strings or Objects  
 Array of Arrays, Strings or Objects, each specifying single transition property. This form allows transitioning multiple transition properties on a single element at once:  
-`[["opacity 0 1 1s"], ["color", "red", "blue", "500ms"]]`
+`["opacity 0 1 1s", ["color", "red", "blue", "500ms"]]`
 
 `options` - Transition options object with the following optional fields:
 
