@@ -7,7 +7,7 @@ module.exports = {
         'transition.min': './src/transition.js'
     },
     output: {
-        path: __dirname + '/web_bin',
+        path: __dirname + '/lib',
         filename: '[name].js',
         library: "transition",
         libraryTarget: "umd"

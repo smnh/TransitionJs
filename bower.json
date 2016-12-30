@@ -1,7 +1,7 @@
 {
     "name": "transitionjs",
-    "main": "web_bin/transition.js",
-    "version": "0.0.4",
+    "main": "lib/transition.js",
+    "version": "0.0.5",
     "authors": [
         "smnh (http://smnh.me)"
     ],
