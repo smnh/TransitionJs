@@ -1,6 +1,6 @@
 {
   "name": "transitionjs",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A JavaScript library that provides a convenient way to create CSS transitions pragmatically http://transitionjs.org",
   "main": "index.js",
   "directories": {
