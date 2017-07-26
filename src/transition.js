@@ -93,6 +93,22 @@ function TransitionProperty() {
     this.cssProperty = utils.domToCSS(this.domProperty);
 }
 
+TransitionProperty.prototype.executeOnTransitionEnd = function(element, finished) {
+    if (utils.isFunction(this.onTransitionEnd)) {
+        let onTransitionEnd = this.onTransitionEnd;
+        utils.executeInNextEventLoop(function() {
+            onTransitionEnd(element, finished);
+        });
+    }
+};
+
+TransitionProperty.prototype.setFromToCurrentValueIfNeeded = function(element, beginFromCurrentValue) {
+    let isBoolean = utils.isBoolean(this.beginFromCurrentValue);
+    if (isBoolean && this.beginFromCurrentValue || !isBoolean && beginFromCurrentValue) {
+        this.from = window.getComputedStyle(element, null).getPropertyValue(this.cssProperty);
+    }
+};
+
 function Transition(properties, options) {
     if (!properties) {
         throw "Transition: 'properties' is a required parameter";
@@ -212,6 +228,38 @@ Transition.begin = function(element, properties, options) {
     };
 };
 
+/**
+ * This function returns transition values for duration, delay and timing function of transition properties.
+ *
+ * For example, if an element has the following transition definition:
+ *   transition-property: color, background-color, width;
+ *   transition-duration: 1s, 400ms
+ *   transition-delay: 2s
+ *
+ * Then the return value will be:
+ * {
+ *     cssProperties: ['color', 'background-color', 'width'],
+ *     durations: ['1s', '400ms', '1s', '400ms'],
+ *     delays: ['2s', '2s', '2s', '2s'],
+ *     timingFunctions: ['ease', 'ease', 'ease', 'ease']
+ * }
+ *
+ * In the case where the lists of values in transition properties do not have the same length, the length of the
+ * transition-property list determines the number of items in each list examined when starting transitions.
+ * The lists are matched up from the first value: excess values at the end are not used. If one of the other properties
+ * doesn’t have enough comma-separated values to match the number of values of transition-property, the UA must
+ * calculate its used value by repeating the list of values until there are enough. This truncation or repetition does
+ * not affect the computed value.
+ * https://drafts.csswg.org/css-transitions/#transitions
+ *
+ * @param element
+ * @returns {{
+ *      cssProperties: Array,
+ *      durations: Array,
+ *      delays: Array,
+ *      timingFunctions: Array
+ * }}
+ */
 Transition.getElementTransitionValues = function(element) {
     let i,
         transitionPropertyCSS,
@@ -307,9 +355,9 @@ Transition.prototype = {
 
         for (i = 0; i < this.properties.length; i++) {
             property = this.properties[i];
-            if (property.from == property.to) {
+            if (String(property.from) === String(property.to)) {
                 element.style[property.domProperty] = property.to;
-                this.executeOnTransitionEndForProperty(property, element, true);
+                property.executeOnTransitionEnd(element, true);
             } else {
                 element.style[property.domProperty] = property.from;
                 this.toBeTransitionedPropertyNames.push(property.cssProperty);
@@ -460,7 +508,7 @@ Transition.prototype = {
         Transition.setElementTransitionValues(element, transitionValues);
 
         property = this.getPropertyByPropertyName(propertyName);
-        this.executeOnTransitionEndForProperty(property, element, true);
+        property.executeOnTransitionEnd(element, true);
 
         if (this.transitioningProperties.length === 0) {
             this.removeTransitionEndListener(element, false);
@@ -512,7 +560,7 @@ Transition.prototype = {
             propertyName = newProperty.cssProperty;
 
             this.removeTransitioningProperty(propertyName);
-            this.updateFromToCurrentValueIfNeeded(element, newProperty, beginFromCurrentValue);
+            newProperty.setFromToCurrentValueIfNeeded(element, beginFromCurrentValue);
 
             index = transitionValues.cssProperties.indexOf(propertyName);
             if (index < 0) {
@@ -524,7 +572,7 @@ Transition.prototype = {
             transitionValues.timingFunctions.splice(index, 1);
 
             oldProperty = this.getPropertyByPropertyName(propertyName);
-            this.executeOnTransitionEndForProperty(oldProperty, element, false);
+            oldProperty.executeOnTransitionEnd(element, false);
         }
 
         if (this.transitioningProperties.length === 0) {
@@ -540,10 +588,10 @@ Transition.prototype = {
             propertyName = newProperty.cssProperty;
 
             this.removeToBeTransitionedProperty(propertyName);
-            this.updateFromToCurrentValueIfNeeded(element, newProperty, beginFromCurrentValue);
+            newProperty.setFromToCurrentValueIfNeeded(element, beginFromCurrentValue);
 
             oldProperty = this.getPropertyByPropertyName(propertyName);
-            this.executeOnTransitionEndForProperty(oldProperty, element, false);
+            oldProperty.executeOnTransitionEnd(element, false);
         }
 
         if (this.toBeTransitionedProperties.length === 0) {
@@ -551,13 +599,6 @@ Transition.prototype = {
                 this.onAfterChangeStyle(element);
             }
             this.removeTransitionEndListener(element, true);
-        }
-    },
-
-    updateFromToCurrentValueIfNeeded: function(element, property, beginFromCurrentValue) {
-        let isBoolean = utils.isBoolean(property.beginFromCurrentValue);
-        if (isBoolean && property.beginFromCurrentValue || !isBoolean && beginFromCurrentValue) {
-            property.from = window.getComputedStyle(element, null).getPropertyValue(property.cssProperty);
         }
     },
 
@@ -586,16 +627,6 @@ Transition.prototype = {
         element.removeEventListener(utils.transitionEndEvent, /** @type EventListener */ this, false);
 
         this.executeOnTransitionEnd(element, useNewExecutionContext);
-    },
-
-    executeOnTransitionEndForProperty: function(property, element, finished) {
-        let onTransitionEnd;
-        if (utils.isFunction(property.onTransitionEnd)) {
-            onTransitionEnd = property.onTransitionEnd;
-            utils.executeInNextEventLoop(function() {
-                onTransitionEnd(element, finished);
-            });
-        }
     },
 
     executeOnTransitionEnd: function(element, useNewExecutionContext) {
