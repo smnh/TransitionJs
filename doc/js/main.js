@@ -1,7 +1,7 @@
 requirejs.config({
     baseUrl: 'js',
     paths: {
-        underscore: 'underscore'
+        underscore: 'underscore.min'
     }
 });
 
