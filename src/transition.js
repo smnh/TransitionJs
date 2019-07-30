@@ -212,13 +212,16 @@ Transition.begin = function(element, properties, options) {
     }
 
     transition = new Transition(_properties, options);
+
+    let promise = new Promise(function(resolve, reject) {
+        transition.resolve = resolve;
+        transition.reject = reject;
+    });
+
     transition.beginTransition(element);
 
     return {
-        promise: new Promise(function(resolve, reject) {
-            transition.resolve = resolve;
-            transition.reject = reject;
-        }),
+        promise: promise,
         pause: function() {
             transition.pause();
         },
